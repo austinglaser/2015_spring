@@ -1,2 +1,5 @@
 # Compiled java files
 *.class
+
+# Zip files
+*.zip
