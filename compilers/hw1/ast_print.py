@@ -200,8 +200,15 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
 
     # Negate the operand, leave result in eax
     elif isinstance(n, UnarySub):
-        source_position = vars_dict[n.expr.name]
-        f.write("\tmovl " + str(source_position) + "(%ebp), %eax\n")
+        if isinstance(n.expr, Name):
+            source_position = vars_dict[n.expr.name]
+            source_operand = str(source_position) + "(%ebp)"
+        elif isinstance(n.expr, Const):
+            source_operand = "$" + str(n.expr.value)
+        else:
+            raise Exception('Error: p0: UnarySub only takes const or variable')
+
+        f.write("\tmovl " + source_operand + ", %eax\n")
         f.write("\tnegl %eax\n")
 
     # Check the function, call the function, leave the return in eax
