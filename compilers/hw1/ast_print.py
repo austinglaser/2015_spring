@@ -89,10 +89,10 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
         n_vars = len(sorted(vars_dict.keys()))
 
         # Write prologue
-        f.write(".globl main\n")
-        f.write("main:\n")
+        f.write(".globl _main\n")
+        f.write("_main:\n")
         f.write("\tpushl %ebp\n")
-        f.write("\tmovl %esp, %epb\n")
+        f.write("\tmovl %esp, %ebp\n")
         f.write("\tsubl $" + str(n_vars*4) + ", %esp\n")
 
         # Write program
@@ -132,7 +132,7 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
             raise Exception('Error: can only print variables or constants')
 
         # Call print
-        f.write("\tcall print_int_nl\n")
+        f.write("\tcall _print_int_nl\n")
         f.write("\taddl $4, %esp\n")
 
     # Check if it's a function return value (just input) or an addition.
@@ -182,7 +182,7 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
             left_operand = "$" + str(n.left.value)
         elif isinstance(n.left, Name):
             left_position = vars_dict[n.left.name]
-            left_operand = str(left_position) + "%(ebp)"
+            left_operand = str(left_position) + "(%ebp)"
         else:
             raise Exception('Error: invalid addition operand')
 
@@ -190,7 +190,7 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
             right_operand = "$" + str(n.right.value)
         elif isinstance(n.right, Name):
             right_position = vars_dict[n.right.name]
-            right_operand = str(right_position) + "%(ebp)"
+            right_operand = str(right_position) + "(%ebp)"
         else:
             raise Exception('Error: invalid addition operand')
 
@@ -208,7 +208,7 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
         if n.node.name != "input":
             raise Exception('Error: p0: input() is the only valid function')
 
-        f.write("\tcall " + n.node.name + "\n")
+        f.write("\tcall _" + n.node.name + "\n")
 
     else:
         raise Exception('Error in ast_print_x86: unrecognized (P0) AST node')
