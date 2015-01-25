@@ -63,16 +63,17 @@ def ast_print_py(n, f=sys.stdout):
 
     # Print <func name>([<arg[0]>[, <arg[1][...]]])
     elif isinstance(n, CallFunc):
-        ast_print_py(n.node, f)
-        f.write("(")
+        if (n.node.name != 'nameExcept'):
+            ast_print_py(n.node, f)
+            f.write("(")
 
-        # Print argument list. Omits comma on last arg
-        if len(n.args) >= 1:
-            for x in n.args[:-1]:
-                ast_print_py(x, f)
-                f.write(", ")
-            ast_print_py(n.args[-1], f)
-        f.write(") ")
+            # Print argument list. Omits comma on last arg
+            if len(n.args) >= 1:
+                for x in n.args[:-1]:
+                    ast_print_py(x, f)
+                    f.write(", ")
+                ast_print_py(n.args[-1], f)
+            f.write(") ")
 
     # Whoops! Wrong type of node
     else:
@@ -94,6 +95,9 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
         f.write("\tpushl %ebp\n")
         f.write("\tmovl %esp, %ebp\n")
         f.write("\tsubl $" + str(n_vars*4) + ", %esp\n")
+
+        for i in range(n_vars):
+            f.write("\tmovl $0, " + str((-4)*(i + 1)) + "(%ebp)\n")
 
         # Write program
         ast_print_x86(n.node, f, vars_dict)
@@ -213,7 +217,7 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
 
     # Check the function, call the function, leave the return in eax
     elif isinstance(n, CallFunc):
-        if n.node.name != "input":
+        if (n.node.name != "input") and (n.node.name != 'nameExcept'):
             raise Exception('Error: p0: input() is the only valid function')
 
         f.write("\tcall " + n.node.name + "\n")

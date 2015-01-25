@@ -12,7 +12,10 @@ from ast_print import *
 # A module is already flat, just get its flattened list of statements
 def Module_flatten(n):
     global tmp_n
+    global vars_list
+
     tmp_n = 0
+    vars_list = []
 
     stmt_f = ast_flatten(n.node)
     module_f = Module(None, stmt_f)
@@ -76,6 +79,7 @@ def Printnl_flatten(n):
 # the entire list
 def Assign_flatten(n):
     global tmp_n
+    global vars_list
 
     # Check number of arguments
     if len(n.nodes) != 1:
@@ -83,6 +87,9 @@ def Assign_flatten(n):
 
     assign_f = ast_flatten(n.expr)
     assign_f[-1] = Assign(n.nodes, assign_f[-1])
+
+    # Add node to vars list, remove duplicates
+    vars_list.append(n.nodes[0].name)
 
     return assign_f
 
@@ -112,7 +119,11 @@ def Const_flatten(n):
 
 # A variable name is already flat.
 def Name_flatten(n):
-    name_f = [copy.copy(n)]
+    global vars_list
+    if not n.name in vars_list:
+        name_f = [CallFunc(Name('nameExcept'), []), copy.copy(n)]
+    else:
+        name_f = [copy.copy(n)]
     return name_f
 
 # Flat additions:
@@ -129,6 +140,7 @@ def Name_flatten(n):
 # <tmpn> + <tmpm>
 def Add_flatten(n):
     global tmp_n
+    global vars_list
 
     right_is_flat = (isinstance(n.right, Const) or isinstance(n.right, Name))
     left_is_flat  = (isinstance(n.left, Const)  or isinstance(n.left, Name))
@@ -175,7 +187,11 @@ def Add_flatten(n):
 
         # Create the now-flat addition, adding it
         # to whatever statements proceed
-        add_f.append(Add([left_f, right_f]))
+        if ((isinstance(left_f, Name)  and (not left_f.name in vars_list)) or
+            (isinstance(right_f, Name) and (not right_f.name in vars_list))):
+            add_f.extend([CallFunc(Name('nameExcept'),[]), Add([left_f, right_f])])
+        else:
+            add_f.append(Add([left_f, right_f]))
 
     # Return the flattened addition (or constant!)
     return add_f
@@ -184,6 +200,7 @@ def Add_flatten(n):
 # Check if negation operation is on flat type (name or const).
 # If it's not, flatten the expression, negate the temp
 def UnarySub_flatten(n):
+    global vars_list
     global tmp_n
 
     is_flat = (isinstance(n.expr, Name) or isinstance(n.expr, Const))
@@ -197,7 +214,10 @@ def UnarySub_flatten(n):
         unarysub_f = ast_flatten(Assign([asstmp], n.expr))
         unarysub_f.extend([UnarySub(tmp)])
     else:
-        unarysub_f = [copy.copy(n)]
+        if isinstance(n.expr, Name) and not n.expr.name in vars_list:
+            unarysub_f = [CallFunc(Name('nameExcept'), []), copy.copy(n)]
+        else:
+            unarysub_f = [copy.copy(n)]
 
     return unarysub_f
         
@@ -213,7 +233,7 @@ def CallFunc_flatten(n):
     if not isinstance(n.node, Name):
         raise Exception("Error: p0: line " + str(n.lineno) + ":Function should be a Name")
     
-    if n.node.name != 'input':
+    if n.node.name != 'input' and n.node.name != 'nameExcept':
         raise Exception("Error: p0: line " + str(n.lineno) + ": invalid function '" + n.node.name + "' called")
 
     callfunc_f = [copy.copy(n)]
@@ -221,6 +241,7 @@ def CallFunc_flatten(n):
 
 def ast_flatten(n):
     global tmp_n
+    global vars_list
 
     if isinstance(n, Module):
         return Module_flatten(n)
