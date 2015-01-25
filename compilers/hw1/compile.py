@@ -25,9 +25,11 @@ def main():
     # Get output filename
     basename = os.path.basename(sys.argv[1])
     names = basename.split('.')
-    outname = 'out/' + '.'.join(names[:-1]) + '.s'
+    outname = '.'.join(names[:-1]) + '.s'
 
-    ast_print_x86(ast_flat)
+    out = open(outname, 'w')
+
+    ast_print_x86(ast_flat, out)
 
 if __name__ == "__main__":
     main()
