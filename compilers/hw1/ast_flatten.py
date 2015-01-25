@@ -5,7 +5,7 @@ import sys
 import copy
 
 # Project
-from ast_print_py import *
+from ast_print import *
 
 # --- HELPER FUNCTIONS ------------------------------------------------------- #
 

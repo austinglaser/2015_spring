@@ -34,20 +34,28 @@ def main():
     # Get all file names in the path
     # https://stackoverflow.com/questions/3207219/how-to-list-all-files-of-a-directory-in-python
     path = 'test/'
+    outpath = 'out/'
     tests = [ f for f in listdir(path) if f.split('.')[-1] == 'py' ] 
     path_tests = [ path + test for test in tests]
 
     ints = 'test/input/ints.txt'
 
+    # Clean output directory
+    os.system('rm -rf ' + outpath)
+    os.system('mkdir -p ' + outpath)
+
     for i in range(len(tests)):
         parts = tests[i].split('.')
         test = '.'.join(parts[:-1])
-        flat = 'out/' + '.'.join(parts[:-1]) + '_flat.' + parts[-1]
-        out = 'out/' + '.'.join(parts[:-1]) + '_out.txt'
-        flat_out = 'out/' + '.'.join(parts[:-1]) + '_flat_out.txt'
+        flat = outpath + '.'.join(parts[:-1]) + '_flat.' + parts[-1]
+        out = outpath + '.'.join(parts[:-1]) + '_out.txt'
+        flat_out = outpath + '.'.join(parts[:-1]) + '_flat_out.txt'
 
 
-        os.system('./compile.py ' + path_tests[i])
+        # Run flattener
+        os.system('./flatten.py ' + path_tests[i])
+
+        # Run test .py file and flattened .py file
         os.system('python ' + path_tests[i] + ' < ' + ints + ' > ' + out)
         os.system('python ' + flat + ' < ' + ints + ' > ' + flat_out)
 

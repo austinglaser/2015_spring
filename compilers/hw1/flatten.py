@@ -9,7 +9,7 @@ import copy
 
 # Project
 from ast_num_nodes import *
-from ast_print_py import *
+from ast_print import *
 from ast_flatten import *
 
 def main():
