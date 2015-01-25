@@ -52,8 +52,8 @@ def Printnl_flatten(n):
     # Check for already flattened statement
     if not is_flat:
         # Create temporary variable (name and assignment target)
-        tmp = Name("_tmp" + str(tmp_n))
-        asstmp = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
+        tmp = Name("____intermediate__variable_number__" + str(tmp_n))
+        asstmp = AssName("____intermediate__variable_number__" + str(tmp_n), 'OP_ASSIGN')
         tmp_n = tmp_n + 1
 
         # Create assignment and flattened assignment
@@ -144,8 +144,8 @@ def Add_flatten(n):
 
         if not left_is_flat:
             # Create temporary variable (name and assignment target)
-            tmp_left = Name("_tmp" + str(tmp_n))
-            asstmp_left = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
+            tmp_left = Name("____intermediate__variable_number__" + str(tmp_n))
+            asstmp_left = AssName("____intermediate__variable_number__" + str(tmp_n), 'OP_ASSIGN')
             tmp_n = tmp_n + 1
 
             # Create an assignment target and flatten it
@@ -160,8 +160,8 @@ def Add_flatten(n):
 
         if not right_is_flat:
             # Create temporary variable (name and assignment target)
-            tmp_right = Name("_tmp" + str(tmp_n))
-            asstmp_right = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
+            tmp_right = Name("____intermediate__variable_number__" + str(tmp_n))
+            asstmp_right = AssName("____intermediate__variable_number__" + str(tmp_n), 'OP_ASSIGN')
             tmp_n = tmp_n + 1
 
             # Create an assignment target and flatten it
@@ -190,8 +190,8 @@ def UnarySub_flatten(n):
 
     if not is_flat:
         # Create temporary variable (name and assignment target)
-        tmp = Name("_tmp" + str(tmp_n))
-        asstmp = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
+        tmp = Name("____intermediate__variable_number__" + str(tmp_n))
+        asstmp = AssName("____intermediate__variable_number__" + str(tmp_n), 'OP_ASSIGN')
         tmp_n = tmp_n + 1
 
         unarysub_f = ast_flatten(Assign([asstmp], n.expr))
