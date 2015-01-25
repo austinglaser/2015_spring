@@ -44,10 +44,10 @@ def Printnl_flatten(n):
     global tmp_n
 
     # Check argument number
-    if len(n.nodes) > 1:
-        raise Exception("Error: p0: line " + str(n.lineno) + ": print takes one or no arguments.")
+    if len(n.nodes) != 1:
+        raise Exception("Error: p0: line " + str(n.lineno) + ": print takes exactly 1 argument.")
 
-    is_flat = (len(n.nodes) == 0 or isinstance(n.nodes[0], Const) or isinstance(n.nodes[0], Name))
+    is_flat = (isinstance(n.nodes[0], Const) or isinstance(n.nodes[0], Name))
 
     # Check for already flattened statement
     if not is_flat:
