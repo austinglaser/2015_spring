@@ -194,8 +194,8 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
         else:
             raise Exception('Error: invalid addition operand')
 
-        f.write("\tmovl " + left_operand + ", %eax\n")
-        f.write("\taddl %eax, " + left_operand + "\n")
+        f.write("\tmovl " + left_operand  + ", %eax\n")
+        f.write("\taddl " + right_operand + ", %eax\n")
 
     # Negate the operand, leave result in eax
     elif isinstance(n, UnarySub):
