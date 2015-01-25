@@ -38,8 +38,7 @@ hashtable_iterator(struct hashtable *h)
 /* key      - return the key of the (key,value) pair at the current position */
 /* value    - return the value of the (key,value) pair at the current position */
 
-void *
-hashtable_iterator_key(struct hashtable_itr *i)
+inline void * hashtable_iterator_key(struct hashtable_itr *i)
 { return i->e->k; }
 
 void *
