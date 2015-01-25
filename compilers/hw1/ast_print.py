@@ -89,8 +89,8 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
         n_vars = len(sorted(vars_dict.keys()))
 
         # Write prologue
-        f.write(".globl _main\n")
-        f.write("_main:\n")
+        f.write(".globl main\n")
+        f.write("main:\n")
         f.write("\tpushl %ebp\n")
         f.write("\tmovl %esp, %ebp\n")
         f.write("\tsubl $" + str(n_vars*4) + ", %esp\n")
@@ -132,7 +132,7 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
             raise Exception('Error: can only print variables or constants')
 
         # Call print
-        f.write("\tcall _print_int_nl\n")
+        f.write("\tcall print_int_nl\n")
         f.write("\taddl $4, %esp\n")
 
     # Check if it's a function return value (just input) or an addition.
@@ -152,7 +152,8 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
         elif isinstance(n.expr, Name):
             source_position = vars_dict[n.expr.name]
             dest_position = vars_dict[n.nodes[0].name]
-            f.write("\tmovl " + str(source_position) + "(%ebp), " + str(dest_position) + "(%ebp)\n")
+            f.write("\tmovl " + str(source_position) + "(%ebp), %eax\n")
+            f.write("\tmovl %eax, " + str(dest_position) + "(%ebp)\n")
 
         else:
                 raise Exception('Error: Assign only from function return values, constants, or single vaiables')
@@ -208,7 +209,7 @@ def ast_print_x86(n, f=sys.stdout, vars_dict=None):
         if n.node.name != "input":
             raise Exception('Error: p0: input() is the only valid function')
 
-        f.write("\tcall _" + n.node.name + "\n")
+        f.write("\tcall " + n.node.name + "\n")
 
     else:
         raise Exception('Error in ast_print_x86: unrecognized (P0) AST node')
