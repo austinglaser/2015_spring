@@ -57,7 +57,7 @@ def main():
         if out_md5 == flat_out_md5:
             print bcolors.OKGREEN, '[ PASSED ] ', bcolors.ENDC, test
         else:
-            print bcolors.FAIL, '[ FAILED ] ', bcolors.ENDC, + test
+            print bcolors.FAIL, '[ FAILED ] ', bcolors.ENDC, test
 
 if __name__ == "__main__":
     main()
