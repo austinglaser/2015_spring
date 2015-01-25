@@ -30,7 +30,7 @@ def main():
     # not as pretty as it could be)
     basename = os.path.basename(sys.argv[1])
     names = basename.split('.')
-    outname = '.'.join(names[:-1]) + '_flat.' + names[-1]
+    outname = 'out/' + '.'.join(names[:-1]) + '_flat.' + names[-1]
 
     # Write AST as python code to a file
     outfile = open(outname, 'w')
