@@ -20,6 +20,7 @@ def main():
     ast = compiler.parseFile(sys.argv[1])
 
     # Flatten AST
+    sys.setrecursionlimit(1500)
     ast_flat = ast_flatten(ast)
 
     # Get output filename
