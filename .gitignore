@@ -3,3 +3,7 @@
 
 # Zip files
 *.zip
+
+# Compiled files
+*.pyc
+*.s
