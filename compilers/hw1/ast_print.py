@@ -36,9 +36,10 @@ def ast_print_py(n, f):
     elif isinstance(n, AssName):
         f.write(n.name + " ")
 
-    # TODO: Figure out what Discard is
+    # Discard is for an expression by itself, which won't ever be evaluated.
+    # Just print the expression
     elif isinstance(n, Discard):
-        f.write("-?Discard?- ")
+        ast_print_py(n.expr, f)
 
     # Print the name of the constant, followed by a space
     elif isinstance(n, Const):
@@ -75,4 +76,4 @@ def ast_print_py(n, f):
 
     # Whoops! Wrong type of node
     else:
-        raise Exception('Error in ast_num_nodes: unrecognized (P0) AST node')
+        raise Exception('Error in ast_print_py: unrecognized (P0) AST node')

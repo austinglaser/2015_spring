@@ -91,9 +91,18 @@ def AssName_flatten(n):
     assname_f = [copy.copy(n)]
     return assname_f
 
-# TODO: Figure out what a Discard node is
+# A Discard is for an expression by itself
+# I think we can PROBABLY throw it away in p0,
+# because there're no valid expressions with
+# side-effects. However, I'm not 100% sure about that,
+# so we flatten the expression, and then discard the
+# result. This is safe, and better generalizes
+# to bigger subsets of python (though eventually
+# we should start thinking about when an expression
+# doesn't have any side-effects)
 def Discard_flatten(n):
-    discard_f = [copy.copy(n)]
+    discard_f = ast_flatten(n.expr)
+    discard_f[-1] = Discard(discard_f[-1])
     return discard_f
 
 # A constant is already flat.
