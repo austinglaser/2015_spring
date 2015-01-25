@@ -52,8 +52,8 @@ def Printnl_flatten(n):
     # Check for already flattened statement
     if not is_flat:
         # Create temporary variable (name and assignment target)
-        tmp = Name("tmp" + str(tmp_n))
-        asstmp = AssName("tmp" + str(tmp_n), 'OP_ASSIGN')
+        tmp = Name("_tmp" + str(tmp_n))
+        asstmp = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
         tmp_n = tmp_n + 1
 
         # Create assignment and flattened assignment
@@ -144,8 +144,8 @@ def Add_flatten(n):
 
         if not left_is_flat:
             # Create temporary variable (name and assignment target)
-            tmp_left = Name("tmp" + str(tmp_n))
-            asstmp_left = AssName("tmp" + str(tmp_n), 'OP_ASSIGN')
+            tmp_left = Name("_tmp" + str(tmp_n))
+            asstmp_left = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
             tmp_n = tmp_n + 1
 
             # Create an assignment target and flatten it
@@ -160,8 +160,8 @@ def Add_flatten(n):
 
         if not right_is_flat:
             # Create temporary variable (name and assignment target)
-            tmp_right = Name("tmp" + str(tmp_n))
-            asstmp_right = AssName("tmp" + str(tmp_n), 'OP_ASSIGN')
+            tmp_right = Name("_tmp" + str(tmp_n))
+            asstmp_right = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
             tmp_n = tmp_n + 1
 
             # Create an assignment target and flatten it
@@ -190,8 +190,8 @@ def UnarySub_flatten(n):
 
     if not is_flat:
         # Create temporary variable (name and assignment target)
-        tmp = Name("tmp" + str(tmp_n))
-        asstmp = AssName("tmp" + str(tmp_n), 'OP_ASSIGN')
+        tmp = Name("_tmp" + str(tmp_n))
+        asstmp = AssName("_tmp" + str(tmp_n), 'OP_ASSIGN')
         tmp_n = tmp_n + 1
 
         unarysub_f = ast_flatten(Assign([asstmp], n.expr))
