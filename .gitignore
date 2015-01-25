@@ -4,6 +4,9 @@
 # Zip files
 *.zip
 
+# Output directory
+out/
+
 # Compiled files
 *.pyc
 *.s
