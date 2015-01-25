@@ -1,7 +1,11 @@
+# Standard
 import compiler
 from compiler.ast import *
 import sys
 import copy
+
+# Project
+from ast_print_py import *
 
 # --- HELPER FUNCTIONS ------------------------------------------------------- #
 
@@ -33,18 +37,15 @@ def Stmt_flatten(n):
 #
 # Anything else:
 # print <expr>
-# ...
+# --->
 # flat(tmpn = <expr>)
 # print tmpn
-#
-# and flatten tmpn = <expr>
 def Printnl_flatten(n):
     global tmp_n
 
     # Check argument number
     if len(n.nodes) > 1:
-        ast_print_py(n)
-        raise Exception("Error: p0: print takes one or no arguments.")
+        raise Exception("Error: p0: line " + str(n.lineno) + ": print takes one or no arguments.")
 
     is_flat = (len(n.nodes) == 0 or isinstance(n.nodes[0], Const) or isinstance(n.nodes[0], Name))
 
@@ -78,8 +79,7 @@ def Assign_flatten(n):
 
     # Check number of arguments
     if len(n.nodes) != 1:
-        ast_print_py(n)
-        raise Exception("Error: p0: Assignments can be to only one variable at a time")
+        raise Exception("Error: p0: line " + str(n.lineno) + ":Assignments can be to only one variable at a time")
 
     assign_f = ast_flatten(n.expr)
     assign_f[-1] = Assign(n.nodes, assign_f[-1])
@@ -166,8 +166,6 @@ def Add_flatten(n):
 
         # Create the now-flat addition, adding it
         # to whatever statements proceed
-        # Not sure why the add constructor insists
-        # on the extra parens, but they fix it
         add_f.append(Add([left_f, right_f]))
 
     # Return the flattened addition (or constant!)
@@ -187,8 +185,8 @@ def UnarySub_flatten(n):
         asstmp = AssName("tmp" + str(tmp_n), 'OP_ASSIGN')
         tmp_n = tmp_n + 1
 
-        assign_f = ast_flatten(Assign([asstmp], n.expr))
-        unarysub_f = [assign_f, UnarySub(tmp)]
+        unarysub_f = ast_flatten(Assign([asstmp], n.expr))
+        unarysub_f.extend([UnarySub(tmp)])
     else:
         unarysub_f = [copy.copy(n)]
 
@@ -199,18 +197,15 @@ def UnarySub_flatten(n):
 # it's a correctly-called input()
 def CallFunc_flatten(n):
     if len(n.args) != 0:
-        ast_print_py(n)
-        raise Exception("Error: p0: no function should have arguments")
+        raise Exception("Error: p0: line " + str(n.lineno) + ": no function should have arguments")
 
     # I THINK this is pedantic, more of a test of the parser
     # than the code
     if not isinstance(n.node, Name):
-        ast_print_py(n)
-        raise Exception("Error: p0: Function should be a Name")
+        raise Exception("Error: p0: line " + str(n.lineno) + ":Function should be a Name")
     
     if n.node.name != 'input':
-        ast_print_py(n)
-        raise Exception("Error: p0: invalid function '" + n.node.name + "' called")
+        raise Exception("Error: p0: line " + str(n.lineno) + ": invalid function '" + n.node.name + "' called")
 
     callfunc_f = [copy.copy(n)]
     return callfunc_f
@@ -252,4 +247,4 @@ def ast_flatten(n):
         return CallFunc_flatten(n)
 
     else:
-        raise Exception('Error in ast_flatten: unrecognized (P0) AST node')
+        raise Exception('Error in ast_flatten: p0: line ' + str(n.lineno) + ': unrecognized AST node')
