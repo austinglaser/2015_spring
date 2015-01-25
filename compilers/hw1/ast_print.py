@@ -13,13 +13,13 @@ def ast_print_py(n, f=sys.stdout):
     elif isinstance(n, Stmt):
         for x in n.nodes:
             ast_print_py(x, f)
-            f.write("\n\n")
+            f.write("\n")
 
     # Print "print" followed by the variable
     # TODO: Throw exception of more than one
     #       argument
     elif isinstance(n, Printnl):
-        f.write("print \n")
+        f.write("print ")
 
         if len(n.nodes) >= 1:
             ast_print_py(n.nodes[0], f)
@@ -29,12 +29,12 @@ def ast_print_py(n, f=sys.stdout):
     # of printing a trailing space if needed
     elif isinstance(n, Assign):
         ast_print_py(n.nodes[0], f)
-        f.write("= \n")
+        f.write("= ")
         ast_print_py(n.expr, f)
 
     # Print the name, followed by a trailing space
     elif isinstance(n, AssName):
-        f.write(n.name + " \n")
+        f.write(n.name + " ")
 
     # Discard is for an expression by itself, which won't ever be evaluated.
     # Just print the expression
@@ -43,36 +43,36 @@ def ast_print_py(n, f=sys.stdout):
 
     # Print the name of the constant, followed by a space
     elif isinstance(n, Const):
-        f.write(str(n.value) + " \n")
+        f.write(str(n.value) + " ")
 
     # Print the name raw (NO trailing space because might
     # be a function. Possibly re-evaluate this)
     elif isinstance(n, Name):
-        f.write(n.name + " \n")
+        f.write(n.name + " ")
 
     # Print <left>+ <right>. Left responsible for trailing space
     elif isinstance(n, Add):
         ast_print_py(n.left, f)
-        f.write("+ \n")
+        f.write("+ ")
         ast_print_py(n.right, f)
 
     # Print -<expr>. Leading minus is tight
     elif isinstance(n, UnarySub):
-        f.write("-\n")
+        f.write("-")
         ast_print_py(n.expr, f)
 
     # Print <func name>([<arg[0]>[, <arg[1][...]]])
     elif isinstance(n, CallFunc):
         ast_print_py(n.node, f)
-        f.write("(\n")
+        f.write("(")
 
         # Print argument list. Omits comma on last arg
         if len(n.args) >= 1:
             for x in n.args[:-1]:
                 ast_print_py(x, f)
-                f.write(", \n")
+                f.write(", ")
             ast_print_py(n.args[-1], f)
-        f.write(") \n")
+        f.write(") ")
 
     # Whoops! Wrong type of node
     else:
