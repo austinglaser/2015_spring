@@ -10,3 +10,5 @@ out/
 # Compiled files
 *.pyc
 *.s
+*.o
+*.a
