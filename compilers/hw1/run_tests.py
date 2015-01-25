@@ -4,6 +4,16 @@ import os
 from os import listdir
 import hashlib
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 # https://stackoverflow.com/questions/4283639/check-files-for-equality
 def filemd5(filename, block_size=2**20):
     f = open(filename)
@@ -45,9 +55,9 @@ def main():
         flat_out_md5 = filemd5(flat_out)
 
         if out_md5 == flat_out_md5:
-            print '[ PASSED ] ' + test
+            print bcolors.OKGREEN, '[ PASSED ] ', bcolors.ENDC, test
         else:
-            print '[ FAILED ] ' + test
+            print bcolors.FAIL, '[ FAILED ] ', bcolors.ENDC, + test
 
 if __name__ == "__main__":
     main()
