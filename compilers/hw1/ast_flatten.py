@@ -121,7 +121,7 @@ def Const_flatten(n):
 def Name_flatten(n):
     global vars_list
     if not n.name in vars_list:
-        name_f = [CallFunc(Name('nameExcept'), []), copy.copy(n)]
+        raise Exception("Error: Unassigned variable")
     else:
         name_f = [copy.copy(n)]
     return name_f
@@ -189,7 +189,7 @@ def Add_flatten(n):
         # to whatever statements proceed
         if ((isinstance(left_f, Name)  and (not left_f.name in vars_list)) or
             (isinstance(right_f, Name) and (not right_f.name in vars_list))):
-            add_f.extend([CallFunc(Name('nameExcept'),[]), Add([left_f, right_f])])
+            raise Exception("Error: Unassigned variable")
         else:
             add_f.append(Add([left_f, right_f]))
 
@@ -215,7 +215,7 @@ def UnarySub_flatten(n):
         unarysub_f.extend([UnarySub(tmp)])
     else:
         if isinstance(n.expr, Name) and not n.expr.name in vars_list:
-            unarysub_f = [CallFunc(Name('nameExcept'), []), copy.copy(n)]
+            raise Exception("Error: Unassigned variable")
         else:
             unarysub_f = [copy.copy(n)]
 
