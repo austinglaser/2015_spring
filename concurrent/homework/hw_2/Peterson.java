@@ -8,7 +8,6 @@ class Peterson  {
     private static volatile int flag1;
 
     public void lock(int me) {
-        int j = 1-me;
         if (me==0) {
             flag0 = 1;
             victim = 0;
