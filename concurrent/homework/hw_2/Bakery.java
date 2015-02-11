@@ -34,7 +34,7 @@ class Bakery
         labels.set(thread_id, max_label() + 1);
 
         int i;
-        boolean mine = false;       // Whether or not the lock is now mine
+        boolean mine;           // Whether or not the lock is now mine
 
         // Wait till we have priority
         do {
