@@ -7,18 +7,19 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 class Bakery
 {
-    private int n_threads;
+    private int n_threads;              // Number of threads accessing the bakery
 
-    private AtomicIntegerArray flags;
-    private AtomicIntegerArray labels;
+    private AtomicIntegerArray flags;   // A flag for every thread
+    private AtomicIntegerArray labels;  // A number for each thread
 
     public Bakery(int n_threads)
     {
+        // Record the number of threads accessing us
         this.n_threads = n_threads;
 
+        // Create and initialize the flag and label arrays
         flags = new AtomicIntegerArray(n_threads);
         labels = new AtomicIntegerArray(n_threads);
-
         int i;
         for (i = 0; i < n_threads; i++) {
             flags.set(i, 0);
@@ -28,15 +29,19 @@ class Bakery
 
     public void lock(int thread_id)
     {
+        // Indicate our interest in the lock
         flags.set(thread_id, 1);
         labels.set(thread_id, max_label() + 1);
 
         int i;
-        boolean mine = false;
+        boolean mine = false;       // Whether or not the lock is now mine
 
+        // Wait till we have priority
         do {
             mine = true;
             for (i = 0; i < n_threads; i++) if (i != thread_id) {
+                // If there's another thread interested, with lower lexigraphical order,
+                // the lock isn't ours
                 if ((flags.get(i) == 1) &&
                     is_after(labels.get(thread_id), thread_id, labels.get(i), i)) {
                     mine = false;
@@ -47,6 +52,7 @@ class Bakery
 
     public void unlock(int thread_id)
     {
+        // Release our interest
         flags.set(thread_id, 0);
     }
 
@@ -57,6 +63,7 @@ class Bakery
         return (major1 > major2) || (major1 == major2 && minor1 > minor2);
     }
 
+    // Find the maximum label of interested threads
     private int max_label()
     {
         int max = 0;
