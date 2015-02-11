@@ -4,19 +4,21 @@
 // In some ways, that would ultimatelly be a more elegant solution, but I believe either 
 // would work.
 
+// Use AtomicIntegerArray to get volatile arrays
+// In the spirit of this assignment, I've only used the get() and set()
+// primitives, so these behave identically to how they would if java
+// actually provided arrays with volatile elements. It's quite frustrating
+// that this isn't a language built in, honestly...
+import java.util.concurrent.atomic.AtomicIntegerArray;
+
 class TreeLock
 {
     private int n_threads;      // Number of threads who will access the lock
     private boolean is_root;    // Whether this lock is the root (last lock before entering CS)
     private TreeLock sub_lock;  // Next lock down (contains effectively half as many locks as current level)
 
-    // Use AtomicIntegerArray to get volatile arrays
-    // In the spirit of this assignment, I've only used the get() and set()
-    // primitives, so these behave identically to how they would if java
-    // actually provided arrays with volatile elements. It's quite frustrating
-    // that this isn't a language built in, honestly...
-    private java.util.concurrent.atomic.AtomicIntegerArray flags;
-    private java.util.concurrent.atomic.AtomicIntegerArray victims;
+    private AtomicIntegerArray flags;
+    private AtomicIntegerArray victims;
 
     public TreeLock(int n_threads)
     {
@@ -30,8 +32,8 @@ class TreeLock
 
         // Create flags and victims for this level. We need a flag for every thread,
         // and a victim indicator for each pair of threads
-        flags = new java.util.concurrent.atomic.AtomicIntegerArray(n_threads);
-        victims = new java.util.concurrent.atomic.AtomicIntegerArray(n_threads / 2);
+        flags = new AtomicIntegerArray(n_threads);
+        victims = new AtomicIntegerArray(n_threads / 2);
 
         // Initialize arrays
         int i;
