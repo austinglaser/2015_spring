@@ -1,0 +1,11 @@
+Test parameters: 1000 trials, threads each counting to 1000
+I ran the tests on my personal laptop (only 4 cores) because I don't appear to
+have access to the ecen5033 machine currently.
+
+1. Test results:
+TreeLock, 8 threads, average over 3 trials: 2506 ms
+TreeLock, 64 threads average over 3 trials: 39893 ms
+
+2. Test results:
+Bakery, 8 threads, average over 3 trials: 2915 ms
+Bakery, 64 threads: I watch a 45 min episode of Star Trek and it didn't finish the first trial
