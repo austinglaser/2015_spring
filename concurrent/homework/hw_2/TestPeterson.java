@@ -3,8 +3,8 @@ import java.util.concurrent.locks.Lock;
 public class TestPeterson implements Runnable {
 
     public int me;
-    public static final int countToThis = 1000;
-    public static final int noOfExperiments = 1000;
+    public static final int countToThis = 2000;
+    public static final int noOfExperiments = 5000;
     public static volatile int count = 0;
     public static Peterson lock = new Peterson();
 
