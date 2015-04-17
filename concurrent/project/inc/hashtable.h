@@ -1,5 +1,5 @@
 /**
- * @file    hashtable.hpp
+ * @file    hashtable.h
  * @author  Austin Glaser <austin.glaser@colorado.edu>
  *
  * @brief   Implements a concurrent hashtable
@@ -58,14 +58,14 @@ typedef uint32_t (*hash_f_t)(hashtable_key_t);
  *
  * @return:             A new hashtable object, or NULL if memory allocation fails
  */
-hashtable_t         hashtable_create(hash_f_t hash_f);
+hashtable_t hashtable_create(hash_f_t hash_f);
 
 /**
  * @brief   Deletes the hashtable, de-allocating all memory used
  *
  * @param[in] h:        The hashtable to be freed
  */
-void                hashtable_free(hashtable_t h);
+void hashtable_free(hashtable_t h);
 
 /**
  * @brief   Returns true if the hashtable has a value corresponding to <key>, false otherwise
@@ -75,8 +75,8 @@ void                hashtable_free(hashtable_t h);
  * 
  * @return:             True if <h>[<key>] contains an value, false otherwise
  */
-bool                hashtable_contains(hashtable_t h,
-                                       hashtable_key_t key);
+bool hashtable_contains(hashtable_t h,
+                        hashtable_key_t key);
 
 /**
  * @brief   Gets the value at <h>[<key>], leaving that object in the table
@@ -86,8 +86,8 @@ bool                hashtable_contains(hashtable_t h,
  * 
  * @return:             The object residing at <h>[<key>], or NULL if none exists
  */
-hashtable_elem_t    hashtable_get(hashtable_t h,
-                                  hashtable_key_t key);
+hashtable_elem_t hashtable_get(hashtable_t h,
+                               hashtable_key_t key);
 
 /**
  * @brief   Removes the value at <h>[<key>], and returns it
@@ -97,8 +97,8 @@ hashtable_elem_t    hashtable_get(hashtable_t h,
  * 
  * @return:             The object residing at <h>[<key>], or NULL if none exists
  */
-hashtable_elem_t    hashtable_remove(hashtable_t h,
-                                     hashtable_key_t key);
+hashtable_elem_t hashtable_remove(hashtable_t h,
+                                  hashtable_key_t key);
 
 /**
  * @brief   Inserts <val> at <h>[<key>]
@@ -109,9 +109,9 @@ hashtable_elem_t    hashtable_remove(hashtable_t h,
  *
  * @return:             True if the data was successfuly inserted. False if there is already an element at <h>[<key>]
  */
-bool                hashtable_insert(hashtable_t h,
-                                     hashtable_key_t key,
-                                     hashtable_val_t val);
+bool hashtable_insert(hashtable_t h,
+                      hashtable_key_t key,
+                      hashtable_val_t val);
 
 /** @} defgroup HASHTABLE */
 
