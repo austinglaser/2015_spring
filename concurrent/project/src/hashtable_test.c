@@ -8,7 +8,7 @@
 /* --- PRIVATE DEPENDENCIES ------------------------------------------------- */
 
 // Module
-//#include "hashtable.h"
+#include "hashtable.h"
 
 // Standard Libraries
 #include <stdio.h>
@@ -89,24 +89,16 @@ uint32_t test_run_all(test_t tests);
 bool test_register(test_t tests, char * name, test_f_t code);
 
 /**
- * @brief       Passing test with no error string
+ * @brief   Test hash function for an int
  */
-bool pass_no_string_test(char ** err_p);
+size_t hash_int(hashtable_elem_t e);
 
 /**
- * @brief       Passingtest with an error string
+ * @brief   Test hash function for a string
+ *
+ * @note    Implementation from http://stackoverflow.com/questions/7666509/hash-function-for-string, http://www.cse.yorku.ca/~oz/hash.html
  */
-bool pass_with_string_test(char ** err_p);
-
-/**
- * @brief       Failing test with no error string
- */
-bool fail_no_string_test(char ** err_p);
-
-/**
- * @brief       Failing test with an error string
- */
-bool fail_with_string_test(char ** err_p);
+size_t hash_string(hashtable_elem_t e);
 
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
 
@@ -123,10 +115,6 @@ int main(void)
     hashtable_tests = test_create();
 
     // Register tests
-    test_register(hashtable_tests, "pass without string", pass_no_string_test);
-    test_register(hashtable_tests, "pass with string", pass_with_string_test);
-    test_register(hashtable_tests, "fail without string", fail_no_string_test);
-    test_register(hashtable_tests, "fail with string", fail_with_string_test);
 
     // Run tests
     if (test_run_all(hashtable_tests))  err = -1;
@@ -232,26 +220,19 @@ bool test_register(test_t tests, char * name, test_f_t code)
     return true;
 }
 
-bool pass_no_string_test(char ** err_p)
+size_t hash_int(hashtable_elem_t e)
 {
-    *err_p = NULL;
-    return true;
+    return (size_t) e;
 }
 
-bool pass_with_string_test(char ** err_p)
+size_t hash_string(hashtable_elem_t e)
 {
-    *err_p = "pass string";
-    return true;
+    size_t hash = 5381;
+    uint32_t i;
+    char * str = (char *) e;
+
+    for (i = 0; str[i]; i++) hash = ((hash << 5) + hash) + str[i]; /* hash * 33 + c */
+
+    return hash;
 }
 
-bool fail_no_string_test(char ** err_p)
-{
-    *err_p = "";
-    return false;
-}
-
-bool fail_with_string_test(char ** err_p)
-{
-    *err_p = "error string";
-    return false;
-}
