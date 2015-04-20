@@ -18,6 +18,7 @@
 /* --- PUBLIC DEPENDENCIES -------------------------------------------------- */
 
 // Standard Libraries
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -41,7 +42,7 @@ typedef void * hashtable_elem_t;
 /**
  * @brief   Function signature for hashing key objects
  */
-typedef uint32_t (*hash_f_t)(hashtable_key_t);
+typedef size_t (*hash_f_t)(hashtable_key_t);
 
 /* --- PUBLIC FUNCTION PROTOTYPES ------------------------------------------- */
 
