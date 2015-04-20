@@ -13,3 +13,4 @@ out/
 *.o
 *.a
 *.dSYM
+hashtable_test
