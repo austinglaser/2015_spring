@@ -16,18 +16,20 @@
 #include "hashtable.h"
 
 // Standard Libraries
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 
 /* --- PRIVATE DATA TYPES --------------------------------------------------- */
 
-typedef struct {
+typedef struct hashtable_t_ {
 } hashtable_s;
 
 /* --- PUBLIC FUNCTION DEFINITIONS------------------------------------------- */
 
 hashtable_t hashtable_create(hash_f_t hash_f)
 {
+    return NULL;
 }
 
 void hashtable_free(hashtable_t h)
@@ -49,7 +51,7 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
     return NULL;
 }
 
-bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_val_t val)
+bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t val)
 {
     return false;
 }

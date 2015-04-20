@@ -26,17 +26,17 @@
 /**
  * @brief   The main API data type
  */
-typedef hashtable_s * hashtable_t;
+typedef struct hashtable_t_ * hashtable_t;
 
 /**
- * @brief   Data used as keys are generic, constant pointers
+ * @brief   Data used as keys are generic pointers
  */
-typedef void const * const hashtable_key_t;
+typedef void * hashtable_key_t;
 
 /**
- * @brief   Data stored are generic, constant pointers
+ * @brief   Data stored are generic pointers
  */
-typedef void const * const hashtable_val_t;
+typedef void * hashtable_elem_t;
 
 /**
  * @brief   Function signature for hashing key objects
@@ -111,7 +111,7 @@ hashtable_elem_t hashtable_remove(hashtable_t h,
  */
 bool hashtable_insert(hashtable_t h,
                       hashtable_key_t key,
-                      hashtable_val_t val);
+                      hashtable_elem_t val);
 
 /** @} defgroup HASHTABLE */
 
