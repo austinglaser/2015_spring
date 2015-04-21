@@ -7,98 +7,77 @@
 
 /* --- PRIVATE DEPENDENCIES ------------------------------------------------- */
 
-// Module
+// Module under test
 #include "hashtable.h"
 
 // Standard Libraries
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 #include <assert.h>
-#include <malloc.h>
+
+// Modules
+#include "unit_test.h"
 
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
-#define RED     "\x1b[0;31;40m"
-#define GREEN   "\x1b[0;32;40m"
-#define RESET   "\x1b[0m"
-
-/* --- PRIVATE DATA TYPES --------------------------------------------------- */
-
-/**
- * @brief   Function signature for running a single test
- *
- * @note    The function should return true if the test passed, and false otherwise.
- *          If the parameter is set to NULL, or the empty string, it won't be printed. Otherwise,
- *          it will be printed as an error string
- */
-typedef bool (*test_f_t)(char **);
-
-/**
- * @brief   Structure for a single test
- */
-typedef struct test_node_t_ {
-    char *                  name;       /**< The test's name */
-    test_f_t                code;       /**< The code used to execute the test */
-    struct test_node_t_ *   next;       /**< The next test to run */
-} * test_node_t;
-
-/**
- * @brief   Unit test structure
- */
-typedef struct test_t_ {
-    uint32_t                n_tests;    /**< How many tests are registered */
-    test_node_t             head;       /**< The linked list of tests */
-} * test_t;
+#define ARRAY_ELEMENTS(a)   (sizeof(a)/sizeof((a)[0]))
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
 
 /**
- * @brief   Allocates a new test structure
- *
- * @return  A pointer to the new structure, or NULL if memory allocation failed
- */
-test_t test_create(void);
-
-/**
- * @brief   De-allocates a test structure
- *
- * @param[in] tests:    A pointer to the structure for deallocation
- */
-void test_free(test_t tests);
-
-/**
- * @brief   Runs all registered tests, prints the results
- *
- * @param[in] tests:    The test structure to run
- *
- * @return              The number of tests which failed
- */
-uint32_t test_run_all(test_t tests);
-
-/**
- * @brief   Registers a single test
- *
- * @param[in,out] tests:    The test structure to add to
- * @param[in] name:         A string encoding the name of the test
- * @param[in] code:         The test code to run
- *
- * @return  true if the insertion succeeded, false otherwise
- */
-bool test_register(test_t tests, char * name, test_f_t code);
-
-/**
  * @brief   Test hash function for an int
  */
-size_t hash_int(hashtable_elem_t e);
+static size_t hash_int(hashtable_elem_t e);
 
 /**
  * @brief   Test hash function for a string
  *
  * @note    Implementation from http://stackoverflow.com/questions/7666509/hash-function-for-string, http://www.cse.yorku.ca/~oz/hash.html
  */
-size_t hash_string(hashtable_elem_t e);
+static size_t hash_string(hashtable_elem_t e);
+
+/**
+ * @brief   Tests creation of a hashtable
+ */
+static bool test_hashtable_create(char ** err_str);
+
+/**
+ * @brief   Tests insertion into a hashtable
+ */
+static bool test_hashtable_insert_contains(char ** err_str);
+
+/**
+ * @brief   Tests contains with an element not present
+ */
+static bool test_hashtable_contains_not_present(char ** err_str);
+
+/**
+ * @brief   Tests that multiple insertions are disallowed
+ */
+static bool test_hashtable_duplicate_insertion(char ** err_str);
+
+/**
+ * @brief   Insertion stress test
+ */
+static bool test_hashtable_insert_stress(char ** err_str);
+
+/**
+ * @brief   Tests getting an object back from the hashtable
+ */
+static bool test_hashtable_get(char ** err_str);
+
+/**
+ * @brief   Tests removing an object from the hashtable
+ */
+static bool test_hashtable_remove(char ** err_str);
+
+/**
+ * @brief   Test with threading
+ *
+ * @note    Unimplemented; will always fail. Probably will be several tests eventually
+ */
+static bool test_hashtable_threading(char ** err_str);
 
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
 
@@ -110,122 +89,39 @@ size_t hash_string(hashtable_elem_t e);
 int main(void)
 {
     uint32_t err;
-    test_t hashtable_tests;
+    unit_test_t hashtable_tests;
 
-    hashtable_tests = test_create();
+    // Allocate test structure
+    hashtable_tests = unit_test_create();
 
     // Register tests
+    unit_test_register(hashtable_tests, "creation", test_hashtable_create);
+    unit_test_register(hashtable_tests, "insertion and membership", test_hashtable_insert_contains);
+    unit_test_register(hashtable_tests, "contains on non-present member", test_hashtable_contains_not_present);
+    unit_test_register(hashtable_tests, "duplicate insertion", test_hashtable_duplicate_insertion);
+    unit_test_register(hashtable_tests, "insert stress", test_hashtable_insert_stress);
+    unit_test_register(hashtable_tests, "getting", test_hashtable_get);
+    unit_test_register(hashtable_tests, "removing", test_hashtable_remove);
+    unit_test_register(hashtable_tests, "threading", test_hashtable_threading);
 
     // Run tests
-    if (test_run_all(hashtable_tests))  err = -1;
+    if (unit_test_run(hashtable_tests)) err = -1;
     else                                err = 0;
 
     // Free test structure
-    test_free(hashtable_tests);
+    unit_test_free(hashtable_tests);
 
     return err;
 }
 
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
 
-test_t test_create(void)
-{
-    // Allocate memory
-    test_t tests = (test_t) malloc(sizeof(struct test_t_));
-    if (!tests) return NULL;
-
-    // Initialize fields
-    tests->n_tests = 0;
-    tests->head = NULL;
-
-    return tests;
-}
-
-void test_free(test_t tests)
-{
-    test_node_t curr;
-    test_node_t next;
-
-    // Free test nodes
-    curr = tests->head;
-    while (curr) {
-        next = curr->next;
-        free(curr);
-        curr = next;
-    }
-
-    // Free structure
-    free(tests);
-}
-
-uint32_t test_run_all(test_t tests)
-{
-    char * err_str;
-    bool passed;
-    uint32_t n_failed = 0;
-    test_node_t curr;
-    
-    // Loop over all registered tests
-    for (curr = tests->head; curr; curr = curr->next) {
-        // Run test
-        passed = curr->code(&err_str);
-
-        // Print results
-        if (passed) {
-            printf("%-30s [ " GREEN "PASS" RESET " ]", curr->name);
-        }
-        else {
-            printf("%-30s [ " RED "FAIL" RESET " ]", curr->name);
-            n_failed++;
-        }
-
-        // Print error if there was one
-        if (err_str && strlen(err_str) > 0) printf(": %s\n", err_str);
-        else                                printf("\n");
-    }
-
-    return n_failed;
-}
-
-bool test_register(test_t tests, char * name, test_f_t code)
-{
-    // Check input
-    if (!tests || !name || !code) return false;
-
-    // Allocate new node
-    test_node_t node = malloc(sizeof(struct test_node_t_));
-    if (!node) return false;
-    node->name = name;
-    node->code = code;
-
-    // Check if list is empty
-    if (tests->head == NULL) {
-        // Debug check
-        assert(tests->n_tests == 0);
-
-        // Insert test
-        tests->head = node;
-        (tests->n_tests)++;
-    }
-    else {
-        // Find the end
-        test_node_t curr;
-        for (curr = tests->head; curr->next; curr = curr->next);
-
-        // Insert test
-        curr->next = node;
-        (tests->n_tests)++;
-    }
-
-    return true;
-}
-
-size_t hash_int(hashtable_elem_t e)
+static size_t hash_int(hashtable_elem_t e)
 {
     return (size_t) e;
 }
 
-size_t hash_string(hashtable_elem_t e)
+static size_t hash_string(hashtable_elem_t e)
 {
     size_t hash = 5381;
     uint32_t i;
@@ -236,3 +132,180 @@ size_t hash_string(hashtable_elem_t e)
     return hash;
 }
 
+static bool test_hashtable_create(char ** err_str)
+{
+    // Allocation
+    hashtable_t int_table       = hashtable_create(hash_int);
+    hashtable_t string_table    = hashtable_create(hash_string);
+    if (!int_table || !string_table) {
+        // Indicate error
+        *err_str = "memory allocation failed";
+        return false;
+    }
+
+    // Free memory
+    hashtable_free(int_table);
+    hashtable_free(string_table);
+
+    // Success
+    *err_str = NULL;
+    return true;
+}
+
+static bool test_hashtable_insert_contains(char ** err_str)
+{
+    bool success;
+    bool present;
+
+    // Allocation
+    hashtable_t int_table       = hashtable_create(hash_int);
+    hashtable_t string_table    = hashtable_create(hash_string);
+    if (!int_table || !string_table) {
+        // Indicate error
+        *err_str = "memory allocation failed";
+        return false;
+    }
+
+    // int insertion
+    success = hashtable_insert(int_table, (void *) 5, "5 elem");
+    if (!success) {
+        *err_str = "int insertion failed";
+        return false;
+    }
+
+    // string insertion
+    success = hashtable_insert(string_table, "five", "5 elem");
+    if (!success) {
+        *err_str = "string insertion failed";
+        return false;
+    }
+
+    // int membership
+    present = hashtable_contains(int_table, (void *) 5);
+    if (!present) {
+        *err_str = "contains failed";
+        return false;
+    }
+
+    // string membership
+    present = hashtable_contains(string_table, "five");
+    if (!present) {
+        *err_str = "contains failed";
+        return false;
+    }
+
+    // Free memory
+    hashtable_free(int_table);
+    hashtable_free(string_table);
+
+    // Success
+    *err_str = NULL;
+    return true;
+}
+
+static bool test_hashtable_contains_not_present(char ** err_str)
+{
+    bool present;
+    bool success;
+    uint32_t i;
+    size_t int_keys[] = {1, 2, 3, -4, 6, 10};
+    char * string_keys[] = {"one", "two", "three", "negative four", "six", "ten"};
+    char * elems[] = {"1 elem", "2 elem", "3 elem", "-4 elem", "6 elem", "10 elem"};
+
+    // Allocation
+    hashtable_t int_table       = hashtable_create(hash_int);
+    hashtable_t string_table    = hashtable_create(hash_string);
+    if (!int_table || !string_table) {
+        // Indicate error
+        *err_str = "memory allocation failed";
+        return false;
+    }
+
+    // Membership on empty int table
+    present = hashtable_contains(int_table, (void *) 5);
+    if (present) {
+        *err_str = "contains on empty int table failed";
+        return false;
+    }
+
+    // Membership on empty string table
+    present = hashtable_contains(string_table, "hi");
+    if (present) {
+        *err_str = "contains on empty string table failed";
+        return false;
+    }
+
+    // Ensure arrays are the same size
+    assert(ARRAY_ELEMENTS(int_keys)     == ARRAY_ELEMENTS(elems));
+    assert(ARRAY_ELEMENTS(string_keys)  == ARRAY_ELEMENTS(elems));
+
+    // Add some members to int table
+    for (i = 0; i < ARRAY_ELEMENTS(int_keys); i++) {
+        success = hashtable_insert(int_table, (void *) int_keys[i], elems[i]);
+        if (!success) {
+            *err_str = "insertion failed";
+            return false;
+        }
+    }
+
+    // Add some members to string table
+    for (i = 0; i < ARRAY_ELEMENTS(string_keys); i++) {
+        success = hashtable_insert(string_table, string_keys[i], elems[i]);
+        if (!success) {
+            *err_str = "insertion failed";
+            return false;
+        }
+    }
+
+    // Membership on non-empty int table
+    present = hashtable_contains(int_table, (void *) 5);
+    if (present) {
+        *err_str = "contains on non-empty int table failed";
+        return false;
+    }
+
+    // Membership on non-empty string table
+    present = hashtable_contains(string_table, "hi");
+    if (present) {
+        *err_str = "contains on non-empty string table failed";
+        return false;
+    }
+
+    // Free memory
+    hashtable_free(int_table);
+    hashtable_free(string_table);
+
+    // Success
+    *err_str = NULL;
+    return true;
+}
+
+static bool test_hashtable_duplicate_insertion(char ** err_str)
+{
+    *err_str = "unimplemented!";
+    return false;
+}
+
+static bool test_hashtable_insert_stress(char ** err_str)
+{
+    *err_str = "unimplemented!";
+    return false;
+}
+
+static bool test_hashtable_get(char ** err_str)
+{
+    *err_str = "unimplemented!";
+    return false;
+}
+
+static bool test_hashtable_remove(char ** err_str)
+{
+    *err_str = "unimplemented!";
+    return false;
+}
+
+static bool test_hashtable_threading(char ** err_str)
+{
+    *err_str = "unimplemented!";
+    return false;
+}

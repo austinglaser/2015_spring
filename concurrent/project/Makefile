@@ -10,7 +10,7 @@ BUILD_DIR := $(ROOT_DIR)/build
 
 all: hashtable_test
 
-hashtable_test: $(BUILD_DIR)/hashtable_test.o $(BUILD_DIR)/hashtable.o | $(BUILD_DIR)
+hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable_test.o $(BUILD_DIR)/hashtable.o | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $^ -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
