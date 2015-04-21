@@ -154,6 +154,7 @@ static bool test_hashtable_create(char ** err_str)
 
 static bool test_hashtable_insert_contains(char ** err_str)
 {
+    bool passed;
     bool success;
     bool present;
 
@@ -166,47 +167,60 @@ static bool test_hashtable_insert_contains(char ** err_str)
         return false;
     }
 
-    // int insertion
-    success = hashtable_insert(int_table, (void *) 5, "5 elem");
-    if (!success) {
-        *err_str = "int insertion failed";
-        return false;
-    }
+    // Initialize error string
+    *err_str = NULL;
 
-    // string insertion
-    success = hashtable_insert(string_table, "five", "5 elem");
-    if (!success) {
-        *err_str = "string insertion failed";
-        return false;
-    }
+    // Ensure memory deallocation on failure
+    do {
+        // int insertion
+        success = hashtable_insert(int_table, (void *) 5, "5 elem");
+        if (!success) {
+            *err_str = "int insertion failed";
+            passed = false;
+            break;
+        }
 
-    // int membership
-    present = hashtable_contains(int_table, (void *) 5);
-    if (!present) {
-        *err_str = "contains failed";
-        return false;
-    }
+        // string insertion
+        success = hashtable_insert(string_table, "five", "5 elem");
+        if (!success) {
+            *err_str = "string insertion failed";
+            passed = false;
+            break;
+        }
 
-    // string membership
-    present = hashtable_contains(string_table, "five");
-    if (!present) {
-        *err_str = "contains failed";
-        return false;
-    }
+        // int membership
+        present = hashtable_contains(int_table, (void *) 5);
+        if (!present) {
+            *err_str = "contains failed";
+            passed = false;
+            break;
+        }
+
+        // string membership
+        present = hashtable_contains(string_table, "five");
+        if (!present) {
+            *err_str = "contains failed";
+            passed = false;
+            break;
+        }
+
+        // Passed all tests!
+        passed = true;
+    } while (false);
 
     // Free memory
     hashtable_free(int_table);
     hashtable_free(string_table);
 
-    // Success
-    *err_str = NULL;
-    return true;
+    // Indicate test result
+    return passed;
 }
 
 static bool test_hashtable_contains_not_present(char ** err_str)
 {
     bool present;
     bool success;
+    bool passed;
     uint32_t i;
     size_t int_keys[] = {1, 2, 3, -4, 6, 10};
     char * string_keys[] = {"one", "two", "three", "negative four", "six", "ten"};
@@ -221,69 +235,123 @@ static bool test_hashtable_contains_not_present(char ** err_str)
         return false;
     }
 
-    // Membership on empty int table
-    present = hashtable_contains(int_table, (void *) 5);
-    if (present) {
-        *err_str = "contains on empty int table failed";
-        return false;
-    }
+    // Initialize error string to empty
+    *err_str = NULL;
 
-    // Membership on empty string table
-    present = hashtable_contains(string_table, "hi");
-    if (present) {
-        *err_str = "contains on empty string table failed";
-        return false;
-    }
-
-    // Ensure arrays are the same size
-    assert(ARRAY_ELEMENTS(int_keys)     == ARRAY_ELEMENTS(elems));
-    assert(ARRAY_ELEMENTS(string_keys)  == ARRAY_ELEMENTS(elems));
-
-    // Add some members to int table
-    for (i = 0; i < ARRAY_ELEMENTS(int_keys); i++) {
-        success = hashtable_insert(int_table, (void *) int_keys[i], elems[i]);
-        if (!success) {
-            *err_str = "insertion failed";
-            return false;
+    do {
+        // Membership on empty int table
+        present = hashtable_contains(int_table, (void *) 5);
+        if (present) {
+            *err_str = "contains on empty int table failed";
+            passed = false;
+            break;
         }
-    }
 
-    // Add some members to string table
-    for (i = 0; i < ARRAY_ELEMENTS(string_keys); i++) {
-        success = hashtable_insert(string_table, string_keys[i], elems[i]);
-        if (!success) {
-            *err_str = "insertion failed";
-            return false;
+        // Membership on empty string table
+        present = hashtable_contains(string_table, "hi");
+        if (present) {
+            *err_str = "contains on empty string table failed";
+            passed = false;
+            break;
         }
-    }
 
-    // Membership on non-empty int table
-    present = hashtable_contains(int_table, (void *) 5);
-    if (present) {
-        *err_str = "contains on non-empty int table failed";
-        return false;
-    }
+        // Ensure arrays are the same size
+        assert(ARRAY_ELEMENTS(int_keys)     == ARRAY_ELEMENTS(elems));
+        assert(ARRAY_ELEMENTS(string_keys)  == ARRAY_ELEMENTS(elems));
 
-    // Membership on non-empty string table
-    present = hashtable_contains(string_table, "hi");
-    if (present) {
-        *err_str = "contains on non-empty string table failed";
-        return false;
-    }
+        // Add some members to int table
+        for (i = 0; i < ARRAY_ELEMENTS(int_keys); i++) {
+            success = hashtable_insert(int_table, (void *) int_keys[i], elems[i]);
+            if (!success) {
+                *err_str = "insertion failed";
+                passed = false;
+                break;
+            }
+        }
+
+        // Add some members to string table
+        for (i = 0; i < ARRAY_ELEMENTS(string_keys); i++) {
+            success = hashtable_insert(string_table, string_keys[i], elems[i]);
+            if (!success) {
+                *err_str = "insertion failed";
+                passed = false;
+                break;
+            }
+        }
+
+        // Membership on non-empty int table
+        present = hashtable_contains(int_table, (void *) 5);
+        if (present) {
+            *err_str = "contains on non-empty int table failed";
+            passed = false;
+            break;
+        }
+
+        // Membership on non-empty string table
+        present = hashtable_contains(string_table, "hi");
+        if (present) {
+            *err_str = "contains on non-empty string table failed";
+            passed = false;
+            break;
+        }
+
+        // Success
+        passed = true;
+    } while (false);
 
     // Free memory
     hashtable_free(int_table);
     hashtable_free(string_table);
 
-    // Success
-    *err_str = NULL;
-    return true;
+    // Indicate test result
+    return passed;
 }
 
 static bool test_hashtable_duplicate_insertion(char ** err_str)
 {
-    *err_str = "unimplemented!";
-    return false;
+    bool passed;
+    bool success;
+
+    // Allocation
+    hashtable_t int_table       = hashtable_create(hash_int);
+    hashtable_t string_table    = hashtable_create(hash_string);
+    if (!int_table || !string_table) {
+        // Indicate error
+        *err_str = "memory allocation failed";
+        return false;
+    }
+
+    // Initialize error string
+    *err_str = NULL;
+
+    // Ensure memory deallocation on failure
+    do {
+        // Insert once (should succeed)
+        success = hashtable_insert(int_table, (void *) 5, "5 elem");
+        if (!success) {
+            *err_str = "first int insertion failed";
+            passed = false;
+            break;
+        }
+
+        // Insert again (should fail)
+        success = hashtable_insert(int_table, (void *) 5, "5 elem");
+        if (success) {
+            *err_str = "second int insertion succeeded";
+            passed = false;
+            break;
+        }
+
+        // All tests passed!
+        passed = true;
+    } while (false);
+
+    // Free memory
+    hashtable_free(int_table);
+    hashtable_free(string_table);
+
+    // Indicate test result
+    return passed;
 }
 
 static bool test_hashtable_insert_stress(char ** err_str)
