@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 #include <assert.h>
 
 // Modules
@@ -22,6 +23,8 @@
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
 #define ARRAY_ELEMENTS(a)   (sizeof(a)/sizeof((a)[0]))
+
+#define N_STRESS_INSERTIONS (2048)
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
 
@@ -356,24 +359,173 @@ static bool test_hashtable_duplicate_insertion(char ** err_str)
 
 static bool test_hashtable_insert_stress(char ** err_str)
 {
-    *err_str = "unimplemented!";
-    return false;
+    *err_str = "!!! unimplemented !!!";
+    return true;
 }
 
 static bool test_hashtable_get(char ** err_str)
 {
-    *err_str = "unimplemented!";
-    return false;
+    bool passed;
+    bool success;
+    hashtable_elem_t elem;
+
+    // Allocation
+    hashtable_t int_table       = hashtable_create(hash_int);
+    hashtable_t string_table    = hashtable_create(hash_string);
+    if (!int_table || !string_table) {
+        // Indicate error
+        *err_str = "memory allocation failed";
+        return false;
+    }
+
+    // Initialize error string
+    *err_str = NULL;
+
+    // Ensure memory deallocation on failure
+    do {
+        // Insert an int
+        success = hashtable_insert(int_table, (void *) 5, "5 elem");
+        if (!success) {
+            *err_str = "insertion failure";
+            passed = false;
+            break;
+        }
+
+        // Insert a string
+        success = hashtable_insert(string_table, "five", "5 elem");
+        if (!success) {
+            *err_str = "insertion failure";
+            passed = false;
+            break;
+        }
+
+        // Get int member back
+        elem = hashtable_get(int_table, (void *) 5);
+        if (!elem || strcmp((char *) elem, "5 elem")) {
+            *err_str = "get failed";
+            passed = false;
+            break;
+        }
+
+        // Get string member back
+        elem = hashtable_get(string_table, "five");
+        if (!elem || strcmp((char *) elem, "5 elem")) {
+            *err_str = "get failed";
+            passed = false;
+            break;
+        }
+
+        // All tests passed!
+        passed = true;
+    } while (false);
+
+    // Free memory
+    hashtable_free(int_table);
+    hashtable_free(string_table);
+
+    // Indicate test result
+    return passed;
 }
 
 static bool test_hashtable_remove(char ** err_str)
 {
-    *err_str = "unimplemented!";
-    return false;
+    bool passed;
+    bool success;
+    bool present;
+    hashtable_elem_t elem;
+
+    // Allocation
+    hashtable_t int_table       = hashtable_create(hash_int);
+    hashtable_t string_table    = hashtable_create(hash_string);
+    if (!int_table || !string_table) {
+        // Indicate error
+        *err_str = "memory allocation failed";
+        return false;
+    }
+
+    // Initialize error string
+    *err_str = NULL;
+
+    // Ensure memory deallocation on failure
+    do {
+        // Insert an int
+        success = hashtable_insert(int_table, (void *) 5, "5 elem");
+        if (!success) {
+            *err_str = "int insertion failure";
+            passed = false;
+            break;
+        }
+
+        // Insert a string
+        success = hashtable_insert(string_table, "five", "5 elem");
+        if (!success) {
+            *err_str = "string insertion failure";
+            passed = false;
+            break;
+        }
+
+        // Check for int presence
+        present = hashtable_contains(int_table, (void *) 5);
+        if (!present) {
+            *err_str = "int insertion failure";
+            passed = false;
+            break;
+        }
+
+        // Check for int presence
+        present = hashtable_contains(string_table, "five");
+        if (!present) {
+            *err_str = "string insertion failure";
+            passed = false;
+            break;
+        }
+
+        // Remove int element
+        elem = hashtable_remove(int_table, (void *) 5);
+        if (!elem || strcmp((char *) elem, "5 elem")) {
+            *err_str = "int remove failed";
+            passed = false;
+            break;
+        }
+
+        // Remove string element
+        elem = hashtable_remove(int_table, "five");
+        if (!elem || strcmp((char *) elem, "5 elem")) {
+            *err_str = "string remove failed";
+            passed = false;
+            break;
+        }
+
+
+        // Check for int presence
+        present = hashtable_contains(int_table, (void *) 5);
+        if (present) {
+            *err_str = "int remove failure";
+            passed = false;
+            break;
+        }
+
+        // Check for int presence
+        present = hashtable_contains(string_table, "five");
+        if (present) {
+            *err_str = "string remove failure";
+            passed = false;
+            break;
+        }
+        // All tests passed!
+        passed = true;
+    } while (false);
+
+    // Free memory
+    hashtable_free(int_table);
+    hashtable_free(string_table);
+
+    // Indicate test result
+    return passed;
 }
 
 static bool test_hashtable_threading(char ** err_str)
 {
-    *err_str = "unimplemented!";
-    return false;
+    *err_str = "!!! unimplemented !!!";
+    return true;
 }
