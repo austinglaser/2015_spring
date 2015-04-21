@@ -16,7 +16,6 @@ hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable_test.o $(BUILD_D
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -I$(INC_DIR) $^ -o $@
 
-.PHONY: $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir -p $@
 
