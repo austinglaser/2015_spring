@@ -95,14 +95,14 @@ int main(void)
     hashtable_tests = unit_test_create();
 
     // Register tests
-    unit_test_register(hashtable_tests, "creation", test_hashtable_create);
-    unit_test_register(hashtable_tests, "insertion and membership", test_hashtable_insert_contains);
-    unit_test_register(hashtable_tests, "contains on non-present member", test_hashtable_contains_not_present);
-    unit_test_register(hashtable_tests, "duplicate insertion", test_hashtable_duplicate_insertion);
-    unit_test_register(hashtable_tests, "insert stress", test_hashtable_insert_stress);
-    unit_test_register(hashtable_tests, "getting", test_hashtable_get);
-    unit_test_register(hashtable_tests, "removing", test_hashtable_remove);
-    unit_test_register(hashtable_tests, "threading", test_hashtable_threading);
+    unit_test_register(hashtable_tests, "creation",                         test_hashtable_create);
+    unit_test_register(hashtable_tests, "insertion and membership",         test_hashtable_insert_contains);
+    unit_test_register(hashtable_tests, "contains on non-present member",   test_hashtable_contains_not_present);
+    unit_test_register(hashtable_tests, "duplicate insertion",              test_hashtable_duplicate_insertion);
+    unit_test_register(hashtable_tests, "insert stress",                    test_hashtable_insert_stress);
+    unit_test_register(hashtable_tests, "getting",                          test_hashtable_get);
+    unit_test_register(hashtable_tests, "removing",                         test_hashtable_remove);
+    unit_test_register(hashtable_tests, "threading",                        test_hashtable_threading);
 
     // Run tests
     if (unit_test_run(hashtable_tests)) err = -1;
