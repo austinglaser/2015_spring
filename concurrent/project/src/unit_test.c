@@ -25,9 +25,12 @@
 
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
-#define RED     "\x1b[0;31;40m"
-#define GREEN   "\x1b[0;32;40m"
-#define RESET   "\x1b[0m"
+#define RED             "\x1b[0;31;40m"     /**< Control string to make red */
+#define GREEN           "\x1b[0;32;40m"     /**< Control string to make green */
+#define RESET           "\x1b[0m"           /**< Control string to reset modifiers */
+
+#define N_PAD_CHARS     40                  /**< Number of padding characters in the name */
+#define N_LEFT_PAD      3                   /**< Number of padding characters to the left */
 
 /* --- PRIVATE DATA TYPES --------------------------------------------------- */
 
@@ -83,7 +86,9 @@ void unit_test_free(unit_test_t tests)
 uint32_t unit_test_run(unit_test_t tests)
 {
     char * err_str;
+    char padded_name[64];
     bool passed;
+    uint32_t i;
     uint32_t n_failed = 0;
     unit_test_node_t curr;
     
@@ -93,12 +98,23 @@ uint32_t unit_test_run(unit_test_t tests)
         // Run test
         passed = curr->code(&err_str);
 
+        // Fill with padding character
+        memset(padded_name, '-', N_PAD_CHARS);
+        padded_name[N_PAD_CHARS] = '\0';
+
+        // Put name in padded string
+        padded_name[N_LEFT_PAD] = ' ';
+        for (i = 0; i < strlen(curr->name); i++) {
+            padded_name[N_LEFT_PAD + 1 + i] = curr->name[i];
+        }
+        padded_name[N_LEFT_PAD + 1 + i] = ' ';
+
         // Print results
         if (passed) {
-            printf("%-30s [ " GREEN "PASS" RESET " ]", curr->name);
+            printf(" %s [ " GREEN "PASS" RESET " ]", padded_name);
         }
         else {
-            printf("%-30s [ " RED "FAIL" RESET " ]", curr->name);
+            printf(" %s [ " RED "FAIL" RESET " ]", padded_name);
             n_failed++;
         }
 
