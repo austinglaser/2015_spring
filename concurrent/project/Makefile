@@ -11,19 +11,33 @@ BUILD_DIR := $(ROOT_DIR)/build
 all: hashtable_test
 
 hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable_test.o $(BUILD_DIR)/hashtable.o | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $^ -o $@
+	@echo "Linking $@"
+	@$(CC) $(CFLAGS) $^ -o $@
+	@echo ""
+	@echo "Done Compiling"
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c -I$(INC_DIR) $^ -o $@
+	@echo "Compiling $(notdir $<)"
+	@$(CC) $(CFLAGS) -c -I$(INC_DIR) $^ -o $@
 
 $(BUILD_DIR):
+	@echo "Compiler options:"
+	@@echo "$(CC) $(CFLAGS) -c -I$(INC_DIR) main.c -o main.o"
+	@echo ""
 	mkdir -p $@
+	@echo ""
 
 .PHONY: clean
 clean:
+	@echo "Cleaning"
+	@echo ""
 	rm -rf hashtable_test $(BUILD_DIR)
+	@echo ""
+	@echo "Done Cleaning"
 
 .PHONY: test
 test: hashtable_test
-	valgrind -q --error-exitcode=128 ./$<
+	@echo "Testing"
+	@valgrind -q --error-exitcode=128 ./$<
+	@echo "Done Testing"
 
