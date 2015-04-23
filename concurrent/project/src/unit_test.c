@@ -39,7 +39,9 @@
  */
 typedef struct unit_test_node_t_ {
     char *                      name;       /**< The test's name */
-    unit_test_f_t               code;       /**< The code used to execute the test */
+    unit_test_pre_f_t           pre;        /**< The code used to initialize the test */
+    unit_test_body_f_t          body;       /**< The code used to execute the test */
+    unit_test_post_f_t          post;       /**< The code used to clean up after the test */
     struct unit_test_node_t_ *  next;       /**< The next test to run */
 } * unit_test_node_t;
 
@@ -86,6 +88,7 @@ void unit_test_free(unit_test_t tests)
 uint32_t unit_test_run(unit_test_t tests)
 {
     char * err_str;
+    void * p_context;
     char padded_name[64];
     bool passed;
     uint32_t i;
@@ -95,8 +98,10 @@ uint32_t unit_test_run(unit_test_t tests)
     // Loop over all registered tests
     printf("\n");
     for (curr = tests->head; curr; curr = curr->next) {
-        // Run test
-        passed = curr->code(&err_str);
+        // Run test. Will only run body if pre-test tasks succeed
+        passed = curr->pre(&p_context, &err_str) &&
+                 curr->body(p_context, &err_str);
+        curr->post(p_context);
 
         // Fill with padding character
         memset(padded_name, '-', N_PAD_CHARS);
@@ -127,16 +132,18 @@ uint32_t unit_test_run(unit_test_t tests)
     return n_failed;
 }
 
-bool unit_test_register(unit_test_t tests, char * name, unit_test_f_t code)
+bool unit_test_register(unit_test_t tests, char * name, unit_test_pre_f_t pre, unit_test_body_f_t body, unit_test_post_f_t post)
 {
     // Check input
-    if (!tests || !name || !code) return false;
+    if (!tests || !name || !pre || !body || !post) return false;
 
     // Allocate new node
     unit_test_node_t node = malloc(sizeof(struct unit_test_node_t_));
     if (!node) return false;
     node->name = name;
-    node->code = code;
+    node->pre  = pre;
+    node->body = body;
+    node->post = post;
 
     // Check if list is empty
     if (tests->head == NULL) {
