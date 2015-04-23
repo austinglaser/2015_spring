@@ -160,7 +160,7 @@ int main(void)
                        test_hashtable_standard_post);
 
     // Run tests
-    if (unit_test_run(hashtable_tests)) err = -1;
+    if (unit_test_run(hashtable_tests)) err = 1;
     else                                err = 0;
 
     // Free test structure
