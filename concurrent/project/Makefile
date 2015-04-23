@@ -22,3 +22,8 @@ $(BUILD_DIR):
 .PHONY: clean
 clean:
 	rm -rf hashtable_test $(BUILD_DIR)
+
+.PHONY: test
+test: hashtable_test
+	valgrind -q --error-exitcode=128 ./$<
+
