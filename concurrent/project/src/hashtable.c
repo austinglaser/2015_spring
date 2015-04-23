@@ -23,7 +23,7 @@
 
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
-#define HASHTABLE_INIT_SIZE     (2)             /**< The initial hash size */
+#define HASH_WIDTH_INIT         (2)             /**< The initial hash size */
 
 /* --- PRIVATE DATA TYPES --------------------------------------------------- */
 
@@ -42,8 +42,8 @@ typedef struct hashtable_node_t_ {
  */
 struct hashtable_t_ {
     size_t                      n_elements;     /**< The total number of elements stored in the table */
-    size_t                      hash_size;      /**< The number of bits in the hash actually used for binning */
-    hashtable_node_t *          hash_list;      /**< An array of hash bins, of length 2^<hash_size> */
+    size_t                      hash_width;     /**< The number of bits in the hash actually used for binning */
+    hashtable_node_t *          hash_list;      /**< An array of hash bins, of length 2^<hash_width> */
     hashtable_node_t            head;           /**< The beginning of the reverse-hash-ordered list */
     hash_f_t                    hash_f;         /**< The function used to hash keys */
 };
@@ -78,7 +78,7 @@ hashtable_t hashtable_create(hash_f_t hash_f)
     if (!h) return NULL;
 
     // Allcoate hash list
-    h->hash_list = (hashtable_node_t*) malloc((1 << HASHTABLE_INIT_SIZE) * sizeof(hashtable_node_t));
+    h->hash_list = (hashtable_node_t*) malloc((1 << HASH_WIDTH_INIT) * sizeof(hashtable_node_t));
     if (!h->hash_list) {
         free(h);
 
@@ -87,7 +87,7 @@ hashtable_t hashtable_create(hash_f_t hash_f)
     }
 
     // Allocate sentinel nodes
-    for (i = 0; i < (1 << HASHTABLE_INIT_SIZE); i++) {
+    for (i = 0; i < (1 << HASH_WIDTH_INIT); i++) {
         h->hash_list[i] = hashtable_node_create(NULL, i);
         if (!h->hash_list[i]) {
             // Free all memory allocated to this point
@@ -102,13 +102,13 @@ hashtable_t hashtable_create(hash_f_t hash_f)
     }
 
     // Initialize remaining fields
-    h->n_elements = 0;
-    h->hash_size = HASHTABLE_INIT_SIZE;
-    h->hash_f = hash_f;
+    h->n_elements   = 0;
+    h->hash_width   = HASH_WIDTH_INIT;
+    h->hash_f       = hash_f;
 
     // Build initial element list
-    // TODO: make this flexible for different initial sizes
-    assert(HASHTABLE_INIT_SIZE == 2);
+    // TODO: make this flexible for different initial widths
+    assert(HASH_WIDTH_INIT == 2);
     h->head = h->hash_list[0];
     h->hash_list[0]->next = h->hash_list[3];
     h->hash_list[3]->next = h->hash_list[1];
