@@ -144,6 +144,7 @@ bool unit_test_register(unit_test_t tests, char * name, unit_test_pre_f_t pre, u
     node->pre  = pre;
     node->body = body;
     node->post = post;
+    node->next = NULL;
 
     // Check if list is empty
     if (tests->head == NULL) {
