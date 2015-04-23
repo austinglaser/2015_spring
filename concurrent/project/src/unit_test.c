@@ -73,16 +73,18 @@ void unit_test_free(unit_test_t tests)
     unit_test_node_t curr;
     unit_test_node_t next;
 
-    // Free test nodes
-    curr = tests->head;
-    while (curr) {
-        next = curr->next;
-        free(curr);
-        curr = next;
-    }
+    if (tests) {
+        // Free test nodes
+        curr = tests->head;
+        while (curr) {
+            next = curr->next;
+            free(curr);
+            curr = next;
+        }
 
-    // Free structure
-    free(tests);
+        // Free structure
+        free(tests);
+    }
 }
 
 uint32_t unit_test_run(unit_test_t tests)
