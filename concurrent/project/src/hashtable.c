@@ -143,6 +143,11 @@ bool hashtable_contains(hashtable_t h, hashtable_key_t key)
     return false;
 }
 
+bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t val)
+{
+    return false;
+}
+
 hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
 {
     return NULL;
@@ -151,11 +156,6 @@ hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
 hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
 {
     return NULL;
-}
-
-bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t val)
-{
-    return false;
 }
 
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */

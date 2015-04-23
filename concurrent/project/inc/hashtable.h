@@ -80,6 +80,19 @@ bool hashtable_contains(hashtable_t h,
                         hashtable_key_t key);
 
 /**
+ * @brief   Inserts <val> at <h>[<key>]
+ *
+ * @param[in,out] h:    The hashtable to modify
+ * @param[in] key:      The value to use as a key
+ * @param[in] val:      The data to store at <h>[<key>]
+ *
+ * @return:             True if the data was successfuly inserted. False if there is already an element at <h>[<key>]
+ */
+bool hashtable_insert(hashtable_t h,
+                      hashtable_key_t key,
+                      hashtable_elem_t val);
+
+/**
  * @brief   Gets the value at <h>[<key>], leaving that object in the table
  *
  * @param[in] h:        The hashtable to search
@@ -100,19 +113,6 @@ hashtable_elem_t hashtable_get(hashtable_t h,
  */
 hashtable_elem_t hashtable_remove(hashtable_t h,
                                   hashtable_key_t key);
-
-/**
- * @brief   Inserts <val> at <h>[<key>]
- *
- * @param[in,out] h:    The hashtable to modify
- * @param[in] key:      The value to use as a key
- * @param[in] val:      The data to store at <h>[<key>]
- *
- * @return:             True if the data was successfuly inserted. False if there is already an element at <h>[<key>]
- */
-bool hashtable_insert(hashtable_t h,
-                      hashtable_key_t key,
-                      hashtable_elem_t val);
 
 /** @} defgroup HASHTABLE */
 
