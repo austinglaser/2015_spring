@@ -335,7 +335,7 @@ static bool test_hashtable_contains_not_present(void * p_context, char ** err_st
     }
 
     // Membership on empty string table
-    present = hashtable_contains(context->string_table, "hi");
+    present = hashtable_contains(context->string_table, "five");
     if (present) {
         *err_str = "contains on empty string table failed";
         return false;
@@ -371,7 +371,7 @@ static bool test_hashtable_contains_not_present(void * p_context, char ** err_st
     }
 
     // Membership on non-empty string table
-    present = hashtable_contains(context->string_table, "hi");
+    present = hashtable_contains(context->string_table, "five");
     if (present) {
         *err_str = "contains on non-empty string table failed";
         return false;
