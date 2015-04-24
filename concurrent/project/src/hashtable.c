@@ -32,7 +32,7 @@
  */
 typedef struct hashtable_node_t_ {
     hashtable_elem_t            elem;           /**< The stored element */
-    size_t                      hash;           /**< The hash of the key associated with this element */
+    uint32_t                    hash;           /**< The hash of the key associated with this element */
     struct hashtable_node_t_ *  next;           /**< The next element in the list (reverse hash ordering) */
     bool                        sentinel;       /**< Whether this is a sentinel node or not */
 } * hashtable_node_t;
@@ -41,8 +41,8 @@ typedef struct hashtable_node_t_ {
  * @brief   The basic data structure for a hash table
  */
 struct hashtable_t_ {
-    size_t                      n_elements;     /**< The total number of elements stored in the table */
-    size_t                      hash_width;     /**< The number of bits in the hash actually used for binning */
+    uint32_t                    n_elements;     /**< The total number of elements stored in the table */
+    uint32_t                    hash_width;     /**< The number of bits in the hash actually used for binning */
     hashtable_node_t *          hash_list;      /**< An array of hash bins, of length 2^<hash_width> */
     hashtable_node_t            head;           /**< The beginning of the reverse-hash-ordered list */
     hash_f_t                    hash_f;         /**< The function used to hash keys */
@@ -58,7 +58,7 @@ struct hashtable_t_ {
  *
  * @return:     An allocated hashtable node, or NULL if memory allocation failed
  */
-static hashtable_node_t hashtable_node_create(hashtable_elem_t elem, size_t hash);
+static hashtable_node_t hashtable_node_create(hashtable_elem_t elem, uint32_t hash);
 
 /**
  * @brief   De-allocates memory associated with a hashtable node
@@ -160,7 +160,7 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
 
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
 
-static hashtable_node_t hashtable_node_create(hashtable_elem_t elem, size_t hash)
+static hashtable_node_t hashtable_node_create(hashtable_elem_t elem, uint32_t hash)
 {
     // Allocate memory
     hashtable_node_t node = (hashtable_node_t) malloc(sizeof(struct hashtable_node_t_));

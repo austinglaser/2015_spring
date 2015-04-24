@@ -41,14 +41,14 @@ typedef struct hashtable_test_contest_t_ {
 /**
  * @brief   Test hash function for an int
  */
-static size_t hash_int(hashtable_elem_t e);
+static uint32_t hash_int(hashtable_elem_t e);
 
 /**
  * @brief   Test hash function for a string
  *
  * @note    Implementation from http://stackoverflow.com/questions/7666509/hash-function-for-string, http://www.cse.yorku.ca/~oz/hash.html
  */
-static size_t hash_string(hashtable_elem_t e);
+static uint32_t hash_string(hashtable_elem_t e);
 
 /**
  * @brief   Initiializes context to the standard struct
@@ -171,14 +171,15 @@ int main(void)
 
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
 
-static size_t hash_int(hashtable_elem_t e)
+static uint32_t hash_int(hashtable_elem_t e)
 {
-    return (size_t) e;
+    // Double cast to avoid compiler warning
+    return (uint32_t)(uintptr_t) e;
 }
 
-static size_t hash_string(hashtable_elem_t e)
+static uint32_t hash_string(hashtable_elem_t e)
 {
-    size_t hash = 5381;
+    uint32_t hash = 5381;
     uint32_t i;
     char * str = (char *) e;
 
