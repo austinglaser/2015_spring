@@ -43,6 +43,7 @@ typedef struct hashtable_node_t_ {
 struct hashtable_t_ {
     uint32_t                    n_elements;     /**< The total number of elements stored in the table */
     uint32_t                    hash_width;     /**< The number of bits in the hash actually used for binning */
+    uint32_t                    hash_mask;      /**< The mask used to determine the significant bits in a hash value */
     hashtable_node_t *          hash_list;      /**< An array of hash bins, of length 2^<hash_width> */
     hashtable_node_t            head;           /**< The beginning of the reverse-hash-ordered list */
     hash_f_t                    hash_f;         /**< The function used to hash keys */
@@ -116,6 +117,8 @@ hashtable_t hashtable_create(hash_f_t hash_f)
     h->n_elements   = 0;
     h->hash_width   = HASH_WIDTH_INIT;
     h->hash_f       = hash_f;
+    h->hash_mask    = 0x00000000;
+    for (i = 0; i < h->hash_width; i++) h->hash_mask |= 0x01 << i;
 
     // Build initial element list
     // TODO: make this flexible for different initial widths
@@ -156,7 +159,28 @@ bool hashtable_contains(hashtable_t h, hashtable_key_t key)
 
 bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t val)
 {
-    return false;
+    // Check input
+    if (!h) return false;
+
+    // Determine whether to resize
+    if ((h->n_elements + 1) > ((1 << h->hash_width)*2)) {
+        // Resize
+        hashtable_node_t* temp = (hashtable_node_t*) realloc(h->hash_list, ((1 << h->hash_width)*2));
+        if (!temp) return false;
+        h->hash_list = temp;
+
+        // Create references to the new list locations
+        uint32_t i;
+        for (i = (1 << h->hash_width); i < (1 << h->hash_width)*2; i++) {
+            // Step through the list until we find the location we're looking for
+            hashtable_node_t prev = h->head;
+            hashtable_node_t curr = prev->next;
+            while (hashtable_uint32_bit_reverse(curr->hash) < hashtable_uint32_bit_reverse(i)) {
+                prev = curr;
+                curr = prev->next;
+            }
+        }
+    }
 }
 
 hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
