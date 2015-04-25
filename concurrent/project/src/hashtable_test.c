@@ -43,14 +43,19 @@ typedef struct hashtable_test_context_t_ {
 /**
  * @brief   Test hash function for an int
  */
-static uint32_t hash_int(hashtable_elem_t e);
+static uint32_t hash_int(hashtable_key_t k);
 
 /**
  * @brief   Test hash function for a string
  *
  * @note    Implementation from http://stackoverflow.com/questions/7666509/hash-function-for-string, http://www.cse.yorku.ca/~oz/hash.html
  */
-static uint32_t hash_string(hashtable_elem_t e);
+static uint32_t hash_string(hashtable_key_t k);
+
+/**
+ * @brief   Prints a single table element
+ */
+static void print_elem(hashtable_elem_t e);
 
 /**
  * @brief   Initiializes context to the standard struct
@@ -173,21 +178,27 @@ int main(void)
 
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
 
-static uint32_t hash_int(hashtable_elem_t e)
+static uint32_t hash_int(hashtable_key_t k)
 {
     // Double cast to avoid compiler warning
-    return (uint32_t)(uintptr_t) e;
+    return (uint32_t)(uintptr_t) k;
 }
 
-static uint32_t hash_string(hashtable_elem_t e)
+static uint32_t hash_string(hashtable_key_t k)
 {
     uint32_t hash = 5381;
     uint32_t i;
-    char * str = (char *) e;
+    char * str = (char *) k;
 
     for (i = 0; str[i]; i++) hash = ((hash << 5) + hash) + str[i]; /* hash * 33 + c */
 
     return hash;
+}
+
+static void print_elem(hashtable_elem_t e)
+{
+    // It's actually a string
+    printf("\"%s\"", (char *) e);
 }
 
 static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
@@ -214,13 +225,13 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
     }
 
     // Allocate tables
-    context->int_table = hashtable_create(hash_int);
+    context->int_table = hashtable_create(hash_int, print_elem);
     if (!context->int_table) {
         *err_str = "memory allocation failed";
         free(context);
         return false;
     }
-    context->string_table = hashtable_create(hash_string);
+    context->string_table = hashtable_create(hash_string, print_elem);
     if (!context->int_table) {
         *err_str = "memory allocation failed";
         hashtable_free(context->int_table);

@@ -44,6 +44,11 @@ typedef void * hashtable_elem_t;
  */
 typedef uint32_t (*hash_f_t)(hashtable_key_t);
 
+/**
+ * @brief   Function signature for printing elements
+ */
+typedef void (*print_f_t)(hashtable_elem_t);
+
 /* --- PUBLIC FUNCTION PROTOTYPES ------------------------------------------- */
 
 /**
@@ -59,7 +64,7 @@ typedef uint32_t (*hash_f_t)(hashtable_key_t);
  *
  * @return              A new hashtable object, or NULL if memory allocation fails
  */
-hashtable_t hashtable_create(hash_f_t hash_f);
+hashtable_t hashtable_create(hash_f_t hash_f, print_f_t print_f);
 
 /**
  * @brief   Deletes the hashtable, de-allocating all memory used

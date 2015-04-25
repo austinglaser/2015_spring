@@ -48,6 +48,7 @@ struct hashtable_t_ {
     hashtable_node_t *          hash_list;      /**< An array of hash bins, of length 2^<hash_width> */
     hashtable_node_t            head;           /**< The beginning of the reverse-hash-ordered list */
     hash_f_t                    hash_f;         /**< The function used to hash keys */
+    print_f_t                   print_f;        /**< The function used to print elements */
 };
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
@@ -82,7 +83,7 @@ static inline uint32_t hashtable_uint32_bit_reverse(uint32_t val);
 
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
 
-hashtable_t hashtable_create(hash_f_t hash_f)
+hashtable_t hashtable_create(hash_f_t hash_f, print_f_t print_f)
 {
     uint32_t i;
 
@@ -118,6 +119,7 @@ hashtable_t hashtable_create(hash_f_t hash_f)
     h->n_elements   = 0;
     h->hash_width   = HASH_WIDTH_INIT;
     h->hash_f       = hash_f;
+    h->print_f      = print_f;
     h->hash_mask    = 0x00000000;
     for (i = 0; i < h->hash_width; i++) h->hash_mask |= 0x01 << i;
 
@@ -373,8 +375,14 @@ void hashtable_print(hashtable_t h)
     hashtable_node_t curr;
 
     for (curr = h->head; curr; curr = curr->next) {
-        if (curr->sentinel) printf("...0x%08x (0x%08x)\n", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
-        else                printf("   0x%08x (0x%08x)\n", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
+        if (curr->sentinel) {
+            printf("[ ...0x%08x (0x%08x) ]\n", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
+        }
+        else {
+            printf("[    0x%08x (0x%08x) ]: ", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
+            h->print_f(curr->elem);
+            printf("\n");
+        }
     }
 }
 
