@@ -325,6 +325,45 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         return false;
     }
 
+    // int insertion
+    success = hashtable_insert(context->int_table, (void *) 4, "4 elem");
+    if (!success) {
+        *err_str = "int insertion failed";
+        return false;
+    }
+    #ifdef VERBOSE
+    printf("After second int insertion:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
+
+
+    // string insertion
+    success = hashtable_insert(context->string_table, "four", "4 elem");
+    if (!success) {
+        *err_str = "string insertion failed";
+        return false;
+    }
+    #ifdef VERBOSE
+    printf("After second string insertion:\n");
+    hashtable_print(context->string_table);
+    printf("\n");
+    #endif
+
+    // int membership
+    present = hashtable_contains(context->int_table, (void *) 4);
+    if (!present) {
+        *err_str = "int contains failed";
+        return false;
+    }
+
+    // string membership
+    present = hashtable_contains(context->string_table, "four");
+    if (!present) {
+        *err_str = "int contains failed";
+        return false;
+    }
+
     // Passed all tests!
     return true;
 }
