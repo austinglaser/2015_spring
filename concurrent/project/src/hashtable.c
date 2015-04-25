@@ -259,7 +259,6 @@ hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
 
     // Generate hash
     hash = h->hash_f(key);
-    reversed = hashtable_uint32_bit_reverse(hash);
 
     // Search table
     curr = h->hash_list[hash & h->hash_mask];
@@ -283,7 +282,6 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
 
     // Generate hash
     hash = h->hash_f(key);
-    reversed = hashtable_uint32_bit_reverse(hash);
 
     // Search table
     curr = h->hash_list[hash & h->hash_mask];
