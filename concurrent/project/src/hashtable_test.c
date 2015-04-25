@@ -226,6 +226,14 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
         return false;
     }
 
+    printf("Initial empty int table:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+
+    printf("Initial empty string table:\n");
+    hashtable_print(context->string_table);
+    printf("\n");
+
     // Pass context on
     *p_context = context;
 
@@ -280,6 +288,10 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         *err_str = "int insertion failed";
         return false;
     }
+    printf("After first int insertion:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+
 
     // string insertion
     success = hashtable_insert(context->string_table, "five", "5 elem");
@@ -287,18 +299,21 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         *err_str = "string insertion failed";
         return false;
     }
+    printf("After first string insertion:\n");
+    hashtable_print(context->string_table);
+    printf("\n");
 
     // int membership
     present = hashtable_contains(context->int_table, (void *) 5);
     if (!present) {
-        *err_str = "contains failed";
+        *err_str = "int contains failed";
         return false;
     }
 
     // string membership
     present = hashtable_contains(context->string_table, "five");
     if (!present) {
-        *err_str = "contains failed";
+        *err_str = "int contains failed";
         return false;
     }
 
