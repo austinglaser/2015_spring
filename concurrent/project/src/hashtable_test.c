@@ -31,7 +31,7 @@
 /**
  * @brief   Data structure for a standard hashtable test
  */
-typedef struct hashtable_test_contest_t_ {
+typedef struct hashtable_test_context_t_ {
     hashtable_t int_table;          /**< A table of ints */
     hashtable_t string_table;       /**< A table of strings */
 } * hashtable_test_context_t;
@@ -205,7 +205,7 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
     *err_str = NULL;
 
     // Allocate context
-    context = (hashtable_test_context_t) malloc(sizeof(struct hashtable_test_contest_t_));
+    context = (hashtable_test_context_t) malloc(sizeof(struct hashtable_test_context_t_));
     if (!context) {
         *err_str = "test allocation failed";
         return false;
