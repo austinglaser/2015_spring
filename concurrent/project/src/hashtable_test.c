@@ -426,6 +426,11 @@ static bool test_hashtable_contains_not_present(void * p_context, char ** err_st
             *err_str = "insertion failed";
             return false;
         }
+        #ifdef VERBOSE
+        printf("int insertion %d:\n", i);
+        hashtable_print(context->int_table);
+        printf("\n");
+        #endif
     }
 
     // Add some members to string table
@@ -435,6 +440,11 @@ static bool test_hashtable_contains_not_present(void * p_context, char ** err_st
             *err_str = "insertion failed";
             return false;
         }
+        #ifdef VERBOSE
+        printf("string insertion %d:\n", i);
+        hashtable_print(context->string_table);
+        printf("\n");
+        #endif
     }
 
     // Membership on non-empty int table
@@ -573,6 +583,11 @@ static bool test_hashtable_remove(void * p_context, char ** err_str)
         *err_str = "int insertion failure";
         return false;
     }
+    #ifdef VERBOSE
+    printf("int insertion:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
 
     // Insert a string
     success = hashtable_insert(context->string_table, "five", "5 elem");
@@ -580,18 +595,23 @@ static bool test_hashtable_remove(void * p_context, char ** err_str)
         *err_str = "string insertion failure";
         return false;
     }
+    #ifdef VERBOSE
+    printf("string insertion:\n");
+    hashtable_print(context->string_table);
+    printf("\n");
+    #endif
 
     // Check for int presence
     present = hashtable_contains(context->int_table, (void *) 5);
     if (!present) {
-        *err_str = "int insertion failure";
+        *err_str = "int contains failure";
         return false;
     }
 
     // Check for int presence
     present = hashtable_contains(context->string_table, "five");
     if (!present) {
-        *err_str = "string insertion failure";
+        *err_str = "string contains failure";
         return false;
     }
 
@@ -601,6 +621,11 @@ static bool test_hashtable_remove(void * p_context, char ** err_str)
         *err_str = "int remove failed";
         return false;
     }
+    #ifdef VERBOSE
+    printf("int removal:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
 
     // Remove string element
     elem = hashtable_remove(context->int_table, "five");
@@ -608,7 +633,11 @@ static bool test_hashtable_remove(void * p_context, char ** err_str)
         *err_str = "string remove failed";
         return false;
     }
-
+    #ifdef VERBOSE
+    printf("string removal:\n");
+    hashtable_print(context->string_table);
+    printf("\n");
+    #endif
 
     // Check for int presence
     present = hashtable_contains(context->int_table, (void *) 5);
