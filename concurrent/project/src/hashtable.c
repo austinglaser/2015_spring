@@ -155,26 +155,11 @@ void hashtable_free(hashtable_t h)
 
 bool hashtable_contains(hashtable_t h, hashtable_key_t key)
 {
-    hashtable_node_t prev;
-    hashtable_node_t curr;
-    uint32_t hash;
-    uint32_t reversed;
+    // Get the element
+    hashtable_elem_t dummy = hashtable_get(h, key);
 
-    // Generate hash
-    hash = h->hash_f(key);
-    reversed = hashtable_uint32_bit_reverse(hash);
-
-    // Search table
-    curr = h->hash_list[hash & h->hash_mask];
-    reversed = hashtable_uint32_bit_reverse(hash);
-    while (curr && hashtable_uint32_bit_reverse(curr->hash) < reversed) {
-        prev = curr;
-        curr = prev->next;
-    }
-
-    // Check if hash is already present
-    if (curr && curr->hash == hash && !curr->sentinel) return true;
-    else                                               return false;
+    // If it's not null, it's in the table
+    return dummy != NULL;
 }
 
 bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
@@ -265,7 +250,26 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
 
 hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
 {
-    return NULL;
+    hashtable_node_t prev;
+    hashtable_node_t curr;
+    uint32_t hash;
+    uint32_t reversed;
+
+    // Generate hash
+    hash = h->hash_f(key);
+    reversed = hashtable_uint32_bit_reverse(hash);
+
+    // Search table
+    curr = h->hash_list[hash & h->hash_mask];
+    reversed = hashtable_uint32_bit_reverse(hash);
+    while (curr && hashtable_uint32_bit_reverse(curr->hash) < reversed) {
+        prev = curr;
+        curr = prev->next;
+    }
+
+    // Check if hash is already present
+    if (curr && curr->hash == hash && !curr->sentinel) return curr->elem;
+    else                                               return NULL;
 }
 
 hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
