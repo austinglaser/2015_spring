@@ -628,7 +628,7 @@ static bool test_hashtable_remove(void * p_context, char ** err_str)
     #endif
 
     // Remove string element
-    elem = hashtable_remove(context->int_table, "five");
+    elem = hashtable_remove(context->string_table, "five");
     if (!elem || strcmp((char *) elem, "5 elem")) {
         *err_str = "string remove failed";
         return false;
