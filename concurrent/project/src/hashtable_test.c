@@ -78,6 +78,11 @@ static bool test_hashtable_create(void * p_context, char ** err_str);
 static bool test_hashtable_insert_contains(void * p_context, char ** err_str);
 
 /**
+ * @brief   Tests edge cases with insertion
+ */
+static bool test_hashtable_insert_edge_cases(void * p_context, char ** err_str);
+
+/**
  * @brief   Tests contains with an element not present
  */
 static bool test_hashtable_contains_not_present(void * p_context, char ** err_str);
@@ -134,6 +139,11 @@ int main(void)
                        "insertion and membership",
                        test_hashtable_standard_pre,
                        test_hashtable_insert_contains,
+                       test_hashtable_standard_post);
+    unit_test_register(hashtable_tests,
+                       "insertion edge cases",
+                       test_hashtable_standard_pre,
+                       test_hashtable_insert_edge_cases,
                        test_hashtable_standard_post);
     unit_test_register(hashtable_tests,
                        "contains on non-present member",
@@ -304,7 +314,7 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         return false;
     }
     #ifdef VERBOSE
-    printf("After first int insertion:\n");
+    printf("Inserted 5:\n");
     hashtable_print(context->int_table);
     printf("\n");
     #endif
@@ -317,7 +327,7 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         return false;
     }
     #ifdef VERBOSE
-    printf("After first string insertion:\n");
+    printf("Inserted \"five\":\n");
     hashtable_print(context->string_table);
     printf("\n");
     #endif
@@ -336,6 +346,16 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         return false;
     }
 
+    // Success
+    return true;
+}
+
+static bool test_hashtable_insert_edge_cases(void * p_context, char ** err_str)
+{
+    hashtable_test_context_t context = (hashtable_test_context_t) p_context;
+    bool success;
+    bool present;
+
     // int insertion
     success = hashtable_insert(context->int_table, (void *) 4, "4 elem");
     if (!success) {
@@ -343,11 +363,10 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         return false;
     }
     #ifdef VERBOSE
-    printf("After second int insertion:\n");
+    printf("Inserted 4:\n");
     hashtable_print(context->int_table);
     printf("\n");
     #endif
-
 
     // string insertion
     success = hashtable_insert(context->string_table, "four", "4 elem");
@@ -356,7 +375,7 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         return false;
     }
     #ifdef VERBOSE
-    printf("After second string insertion:\n");
+    printf("Inserted \"four\":\n");
     hashtable_print(context->string_table);
     printf("\n");
     #endif
@@ -372,6 +391,42 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
     present = hashtable_contains(context->string_table, "four");
     if (!present) {
         *err_str = "int contains failed";
+        return false;
+    }
+
+    // int insertion
+    success = hashtable_insert(context->int_table, (void *) 0, "0 elem");
+    if (!success) {
+        *err_str = "zero hash insertion failed";
+        return false;
+    }
+    #ifdef VERBOSE
+    printf("Inserted 0:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
+
+    present = hashtable_contains(context->int_table, (void *) 0);
+    if (!present) {
+        *err_str = "zero hash insertion failed";
+        return false;
+    }
+
+    // int insertion
+    success = hashtable_insert(context->int_table, (void *) UINT32_MAX, "effs elem");
+    if (!success) {
+        *err_str = "max hash insertion failed";
+        return false;
+    }
+    #ifdef VERBOSE
+    printf("Inserted 0xFFFFFFFF:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
+
+    present = hashtable_contains(context->int_table, (void *) UINT32_MAX);
+    if (!present) {
+        *err_str = "max hash insertion failed";
         return false;
     }
 
