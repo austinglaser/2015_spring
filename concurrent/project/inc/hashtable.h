@@ -57,7 +57,7 @@ typedef uint32_t (*hash_f_t)(hashtable_key_t);
  *                      If a table which can store multiple types of objects is desired,
  *                      the function must be able to hash any and all of them appropriately
  *
- * @return:             A new hashtable object, or NULL if memory allocation fails
+ * @return              A new hashtable object, or NULL if memory allocation fails
  */
 hashtable_t hashtable_create(hash_f_t hash_f);
 
@@ -74,7 +74,7 @@ void hashtable_free(hashtable_t h);
  * @param[in] h:        The hashtable to search
  * @param[in] key:      A piece of data, hashable with the hash function provide for <h>
  * 
- * @return:             True if <h>[<key>] contains an value, false otherwise
+ * @return              True if <h>[<key>] contains an value, false otherwise
  */
 bool hashtable_contains(hashtable_t h,
                         hashtable_key_t key);
@@ -86,7 +86,7 @@ bool hashtable_contains(hashtable_t h,
  * @param[in] key:      The value to use as a key
  * @param[in] val:      The data to store at <h>[<key>]
  *
- * @return:             True if the data was successfuly inserted. False if there is already an element at <h>[<key>]
+ * @return              True if the data was successfuly inserted. False if there is already an element at <h>[<key>]
  */
 bool hashtable_insert(hashtable_t h,
                       hashtable_key_t key,
@@ -98,7 +98,7 @@ bool hashtable_insert(hashtable_t h,
  * @param[in] h:        The hashtable to search
  * @param[in] key:      A piece of data, hashable with the hash function provide for <h>
  * 
- * @return:             The object residing at <h>[<key>], or NULL if none exists
+ * @return              The object residing at <h>[<key>], or NULL if none exists
  */
 hashtable_elem_t hashtable_get(hashtable_t h,
                                hashtable_key_t key);
