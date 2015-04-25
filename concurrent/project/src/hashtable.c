@@ -125,9 +125,9 @@ hashtable_t hashtable_create(hash_f_t hash_f)
     // TODO: make this flexible for different initial widths
     assert(HASH_WIDTH_INIT == 2);
     h->head = h->hash_list[0];
-    h->hash_list[0]->next = h->hash_list[3];
-    h->hash_list[3]->next = h->hash_list[1];
-    h->hash_list[1]->next = h->hash_list[2];
+    h->hash_list[0]->next = h->hash_list[2];
+    h->hash_list[2]->next = h->hash_list[1];
+    h->hash_list[1]->next = h->hash_list[3];
 
     // Success
     return h;
@@ -173,8 +173,8 @@ bool hashtable_contains(hashtable_t h, hashtable_key_t key)
     }
 
     // Check if hash is already present
-    if (curr && curr->hash == hash && !curr->sentinel) return false;
-    else                                               return true;
+    if (curr && curr->hash == hash && !curr->sentinel) return true;
+    else                                               return false;
 }
 
 bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
@@ -326,8 +326,8 @@ void hashtable_print(hashtable_t h)
     hashtable_node_t curr;
 
     for (curr = h->head; curr; curr = curr->next) {
-        if (curr->sentinel) printf("...0x%08x\n", curr->hash);
-        else                printf("   0x%08x\n", curr->hash);
+        if (curr->sentinel) printf("...0x%08x (0x%08x)\n", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
+        else                printf("   0x%08x (0x%08x)\n", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
     }
 }
 
