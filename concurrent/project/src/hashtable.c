@@ -154,16 +154,41 @@ void hashtable_free(hashtable_t h)
 
 bool hashtable_contains(hashtable_t h, hashtable_key_t key)
 {
-    return false;
+    hashtable_node_t prev;
+    hashtable_node_t curr;
+    uint32_t hash;
+    uint32_t reversed;
+
+    // Generate hash
+    hash = h->hash_f(key);
+    reversed = hashtable_uint32_bit_reverse(hash);
+
+    // Search table
+    curr = h->hash_list[hash & h->hash_mask];
+    reversed = hashtable_uint32_bit_reverse(hash);
+    while (curr && hashtable_uint32_bit_reverse(curr->hash) < reversed) {
+        prev = curr;
+        curr = prev->next;
+    }
+
+    // Check if hash is already present
+    if (curr && curr->hash == hash && !curr->sentinel) return false;
+    else                                               return true;
 }
 
-bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t val)
+bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
 {
+    hashtable_node_t prev;
+    hashtable_node_t curr;
+    hashtable_node_t node;
+    uint32_t hash;
+    uint32_t reversed;
+
     // Check input
     if (!h) return false;
 
     // Determine whether to resize
-    if ((h->n_elements + 1) > ((1 << h->hash_width)*2)) {
+    if ((h->n_elements + 1) > ((1U << h->hash_width)*2)) {
         // Resize
         hashtable_node_t* temp = (hashtable_node_t*) realloc(h->hash_list, ((1 << h->hash_width)*2));
         if (!temp) return false;
@@ -171,16 +196,70 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t val)
 
         // Create references to the new list locations
         uint32_t i;
-        for (i = (1 << h->hash_width); i < (1 << h->hash_width)*2; i++) {
+        for (i = (1U << h->hash_width); i < (1U << h->hash_width)*2; i++) {
             // Step through the list until we find the location we're looking for
-            hashtable_node_t prev = h->head;
-            hashtable_node_t curr = prev->next;
-            while (hashtable_uint32_bit_reverse(curr->hash) < hashtable_uint32_bit_reverse(i)) {
+            curr = h->head;
+            reversed = hashtable_uint32_bit_reverse(i);
+            while (curr && hashtable_uint32_bit_reverse(curr->hash) < reversed) {
                 prev = curr;
                 curr = prev->next;
             }
+
+            // Check if we should create a new node
+            if (curr && i == curr->hash) {
+                // Just set our reference
+                h->hash_list[i] = curr;
+            }
+            else {
+                // Create a sentinel node
+                node = hashtable_node_create(NULL, i);
+                node->sentinel = true;
+
+                // Insert it
+                node->next = curr;
+                prev->next = node;
+
+                // Set the reference
+                h->hash_list[i] = curr;
+            }
+        }
+
+        // Increase hash width
+        h->hash_mask |= (1 << h->hash_width);
+        (h->hash_width)++;
+    }
+
+    // Get the key's hash
+    hash = h->hash_f(key);
+
+    // Find the appropriate place in the table
+    curr = h->hash_list[hash & h->hash_mask];
+    reversed = hashtable_uint32_bit_reverse(hash);
+    while (curr && hashtable_uint32_bit_reverse(curr->hash) < reversed) {
+        prev = curr;
+        curr = prev->next;
+    }
+
+    // Check if hash is already present
+    if (curr && curr->hash == hash) {
+        // See if it's a sentinel
+        if (!curr->sentinel) return false;
+        else {
+            curr->sentinel = false;
+            curr->elem = elem;
         }
     }
+    else {
+        // Create a new node
+        node = hashtable_node_create(elem, hash);
+
+        // Insert it
+        node->next = curr;
+        prev->next = node;
+    }
+
+    // Success
+    return true;
 }
 
 hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
