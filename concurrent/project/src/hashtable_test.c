@@ -26,6 +26,8 @@
 
 #define N_STRESS_INSERTIONS (2048)
 
+//#define VERBOSE
+
 /* --- PRIVATE DATA TYPES --------------------------------------------------- */
 
 /**
@@ -226,6 +228,7 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
         return false;
     }
 
+    #ifdef VERBOSE
     printf("Initial empty int table:\n");
     hashtable_print(context->int_table);
     printf("\n");
@@ -233,6 +236,7 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
     printf("Initial empty string table:\n");
     hashtable_print(context->string_table);
     printf("\n");
+    #endif
 
     // Pass context on
     *p_context = context;
@@ -288,9 +292,11 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         *err_str = "int insertion failed";
         return false;
     }
+    #ifdef VERBOSE
     printf("After first int insertion:\n");
     hashtable_print(context->int_table);
     printf("\n");
+    #endif
 
 
     // string insertion
@@ -299,9 +305,11 @@ static bool test_hashtable_insert_contains(void * p_context, char ** err_str)
         *err_str = "string insertion failed";
         return false;
     }
+    #ifdef VERBOSE
     printf("After first string insertion:\n");
     hashtable_print(context->string_table);
     printf("\n");
+    #endif
 
     // int membership
     present = hashtable_contains(context->int_table, (void *) 5);
