@@ -109,10 +109,17 @@ hashtable_elem_t hashtable_get(hashtable_t h,
  * @param[in] h:        The hashtable to search
  * @param[in] key:      A piece of data, hashable with the hash function provide for <h>
  * 
- * @return:             The object residing at <h>[<key>], or NULL if none exists
+ * @return              The object residing at <h>[<key>], or NULL if none exists
  */
 hashtable_elem_t hashtable_remove(hashtable_t h,
                                   hashtable_key_t key);
+
+/**
+ * @brief   Prints a hashtable
+ *
+ * @param[in] h:        The hashtable to print
+ */
+void hashtable_print(hashtable_t h);
 
 /** @} defgroup HASHTABLE */
 

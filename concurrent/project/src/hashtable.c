@@ -17,6 +17,7 @@
 
 // Standard Libraries
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -318,6 +319,16 @@ static inline uint32_t hashtable_uint32_bit_reverse(uint32_t val)
 
     // Return reversed value
     return reversed;
+}
+
+void hashtable_print(hashtable_t h)
+{
+    hashtable_node_t curr;
+
+    for (curr = h->head; curr; curr = curr->next) {
+        if (curr->sentinel) printf("...0x%08x\n", curr->hash);
+        else                printf("   0x%08x\n", curr->hash);
+    }
 }
 
 /** @} addtogroup HASHTABLE */
