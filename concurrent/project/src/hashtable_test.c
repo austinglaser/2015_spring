@@ -12,10 +12,12 @@
 
 // Standard Libraries
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 // Modules
 #include "unit_test.h"
@@ -37,6 +39,15 @@ typedef struct hashtable_test_context_t_ {
     hashtable_t int_table;          /**< A table of ints */
     hashtable_t string_table;       /**< A table of strings */
 } * hashtable_test_context_t;
+
+/**
+ * @brief   Data structure for a stress test
+ */
+typedef struct hashtable_stress_context_t_ {
+    hashtable_t int_table;          /**< A table of ints */
+    uint32_t * keys;                /**< Some keys to insert */
+    char ** elems;                  /**< Some elements to insert with them */
+} * hashtable_stress_context_t;
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
 
@@ -66,6 +77,16 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str);
  * @brief   Deallocates everything in the standard case
  */
 static void test_hashtable_standard_post(void * p_context);
+
+/**
+ * @brief   Initiializes context to the stress struct
+ */
+static bool test_hashtable_stress_pre(void ** p_context, char ** err_str);
+
+/**
+ * @brief   Deallocates everything in the stress struct
+ */
+static void test_hashtable_stress_post(void * p_context);
 
 /**
  * @brief   Tests creation of a hashtable
@@ -157,9 +178,9 @@ int main(void)
                        test_hashtable_standard_post);
     unit_test_register(hashtable_tests,
                        "insert stress",
-                       test_hashtable_standard_pre,
+                       test_hashtable_stress_pre,
                        test_hashtable_insert_stress,
-                       test_hashtable_standard_post);
+                       test_hashtable_stress_post);
     unit_test_register(hashtable_tests,
                        "getting",
                        test_hashtable_standard_pre,
@@ -275,6 +296,121 @@ static void test_hashtable_standard_post(void * p_context)
     if (context) {
         if (context->int_table)     hashtable_free(context->int_table);
         if (context->string_table)  hashtable_free(context->string_table);
+
+        free(context);
+    }
+}
+
+static bool test_hashtable_stress_pre(void ** p_context, char ** err_str)
+{
+    hashtable_stress_context_t context;
+    uint32_t i, j;
+
+    // Ensure params are good
+    if (!err_str) {
+        return false;
+    }
+    if (!p_context) {
+        *err_str = "!!! bad params !!!";
+        return false;
+    }
+
+    // Initialize error string
+    *err_str = NULL;
+
+    // Allocate context
+    context = (hashtable_stress_context_t) malloc(sizeof(struct hashtable_stress_context_t_));
+    if (!context) {
+        *err_str = "test allocation failed";
+        return false;
+    }
+
+    // Allocate table
+    context->int_table = hashtable_create(hash_int, print_elem);
+    if (!context->int_table) {
+        *err_str = "memory allocation failed";
+        free(context);
+        return false;
+    }
+
+    #ifdef VERBOSE
+    printf("Initial empty int table:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
+
+    // Allocate keys
+    context->keys = (uint32_t *) malloc(sizeof(uint32_t) * N_STRESS_INSERTIONS);
+    if (!context->keys) {
+        *err_str = "memory allocation failed";
+        free(context->int_table);
+        free(context);
+        return false;
+    }
+
+    // Fill with ascending numbers
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) context->keys[i] = i;
+
+    // Shuffle the numbers
+    srand(time(NULL));
+    for (i = 0; i < N_STRESS_INSERTIONS*4; i++) {
+        uint32_t first_loc = rand() % N_STRESS_INSERTIONS;
+        uint32_t second_loc = rand() % N_STRESS_INSERTIONS;
+        uint32_t key_temp = context->keys[first_loc];
+        context->keys[first_loc] = context->keys[second_loc];
+        context->keys[second_loc] = key_temp;
+    }
+
+    // Allocate element array
+    context->elems = (char **) malloc(sizeof(char *) * N_STRESS_INSERTIONS);
+    if (!context->elems) {
+        *err_str = "memory allocation failed";
+        free(context->keys);
+        free(context->int_table);
+        free(context);
+        return false;
+    }
+
+    // Allocate elements
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        context->elems[i] = (char *) malloc(sizeof(char) * 10);
+        if (!context->elems[i]) {
+            *err_str = "memory allocation failed";
+            for (j = 0; j < i; j++) free(context->elems[j]);
+            free(context->elems);
+            free(context->keys);
+            free(context->int_table);
+            free(context);
+            return false;
+        }
+    }
+
+    // Fill elements
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) sprintf(context->elems[i], "%d", context->keys[i]);
+
+    // Pass context on
+    *p_context = context;
+
+    // Successful allocation
+    *err_str = NULL;
+    return true;
+}
+
+static void test_hashtable_stress_post(void * p_context)
+{
+    hashtable_stress_context_t context = (hashtable_stress_context_t) p_context;
+
+    // Free all the memory
+    if (context) {
+        if (context->elems) {
+            uint32_t i;
+            for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+                if (context->elems[i]) free(context->elems[i]);
+            }
+            free(context->elems);
+        }
+        if (context->keys)          free(context->keys);
+        if (context->int_table)     hashtable_free(context->int_table);
 
         free(context);
     }
@@ -557,10 +693,38 @@ static bool test_hashtable_duplicate_insertion(void * p_context, char ** err_str
 
 static bool test_hashtable_insert_stress(void * p_context, char ** err_str)
 {
-    (void) p_context;
+    hashtable_stress_context_t context = (hashtable_stress_context_t) p_context;
+    uint32_t i;
+    bool success;
 
-    *err_str = "!!! unimplemented !!!";
-    return false;
+    // Insert everything
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        success = hashtable_insert(context->int_table, (void *)(uintptr_t) context->keys[i], context->elems[i]);
+        if (!success) {
+            *err_str = "int insertion failed";
+            return false;
+        }
+    }
+
+    #ifdef VERBOSE
+    printf("final table:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
+
+    // Check that it's all there
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        hashtable_elem_t elem = hashtable_get(context->int_table, (void *)(uintptr_t) context->keys[i]);
+        if (!elem || strcmp((char *) elem, context->elems[i]) != 0) {
+            printf("failed at %d\n", i);
+            *err_str = "int retrieval failed";
+            return false;
+        }
+    }
+
+    // Success
+    *err_str = "";
+    return true;
 }
 
 static bool test_hashtable_get(void * p_context, char ** err_str)
