@@ -38,6 +38,6 @@ clean:
 .PHONY: test
 test: hashtable_test
 	@echo "Testing"
-	@valgrind -q --error-exitcode=128 ./$<
+	@valgrind -q --leak-check=full --error-exitcode=128 ./$<
 	@echo "Done Testing"
 
