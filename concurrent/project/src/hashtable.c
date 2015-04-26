@@ -42,7 +42,7 @@ typedef struct hashtable_node_t_ {
  * @brief   The basic data structure for a hash table
  */
 struct hashtable_t_ {
-    uint32_t                    n_elements;     /**< The total number of elements stored in the table */
+    uint_fast32_t               n_elements;     /**< The total number of elements stored in the table */
     uint32_t                    hash_width;     /**< The number of bits in the hash actually used for binning */
     uint32_t                    hash_mask;      /**< The mask used to determine the significant bits in a hash value */
     hashtable_node_t *          hash_list;      /**< An array of hash bins, of length 2^<hash_width> */
@@ -86,7 +86,7 @@ static inline uint32_t hashtable_uint32_bit_reverse(uint32_t val);
 
 hashtable_t hashtable_create(hash_f_t hash_f, print_f_t print_f, free_f_t free_f)
 {
-    uint32_t i;
+    uint_fast32_t i;
 
     // Allocate memory
     hashtable_t h = (hashtable_t) malloc(sizeof(struct hashtable_t_));
@@ -106,7 +106,7 @@ hashtable_t hashtable_create(hash_f_t hash_f, print_f_t print_f, free_f_t free_f
         h->hash_list[i] = hashtable_node_create(NULL, i);
         if (!h->hash_list[i]) {
             // Free all memory allocated to this point
-            uint32_t j;
+            uint_fast32_t j;
             for (j = 0; j < i; j++) hashtable_node_free(h->hash_list[j]);
             free(h->hash_list);
             free(h);
@@ -186,7 +186,7 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
         h->hash_list = temp;
 
         // Create references to the new list locations
-        uint32_t i;
+        uint_fast32_t i;
         for (i = (1U << h->hash_width); i < (1U << h->hash_width)*2; i++) {
             // Step through the list until we find the location we're looking for
             curr = h->head;
