@@ -181,7 +181,7 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
     // Determine whether to resize
     if ((h->n_elements + 1) > ((1U << h->hash_width)*2)) {
         // Resize
-        hashtable_node_t* temp = (hashtable_node_t*) realloc(h->hash_list, ((1 << h->hash_width)*2));
+        hashtable_node_t* temp = (hashtable_node_t*) realloc(h->hash_list, ((1 << h->hash_width)*2)*sizeof(hashtable_node_t*));
         if (!temp) return false;
         h->hash_list = temp;
 
@@ -211,7 +211,7 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
                 prev->next = node;
 
                 // Set the reference
-                h->hash_list[i] = curr;
+                h->hash_list[i] = node;
             }
         }
 
@@ -248,6 +248,9 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
         node->next = curr;
         prev->next = node;
     }
+
+    // Increase element count
+    (h->n_elements)++;
 
     // Success
     return true;
