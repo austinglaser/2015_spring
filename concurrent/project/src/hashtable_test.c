@@ -26,7 +26,7 @@
 
 #define ARRAY_ELEMENTS(a)   (sizeof(a)/sizeof((a)[0]))
 
-#define N_STRESS_INSERTIONS (2048)
+#define N_STRESS_INSERTIONS (3200)          // Not a power of two
 
 //#define VERBOSE
 
@@ -114,9 +114,9 @@ static bool test_hashtable_contains_not_present(void * p_context, char ** err_st
 static bool test_hashtable_duplicate_insertion(void * p_context, char ** err_str);
 
 /**
- * @brief   Insertion stress test
+ * @brief   Stress Test
  */
-static bool test_hashtable_insert_stress(void * p_context, char ** err_str);
+static bool test_hashtable_stress(void * p_context, char ** err_str);
 
 /**
  * @brief   Tests getting an object back from the hashtable
@@ -177,11 +177,6 @@ int main(void)
                        test_hashtable_duplicate_insertion,
                        test_hashtable_standard_post);
     unit_test_register(hashtable_tests,
-                       "insert stress",
-                       test_hashtable_stress_pre,
-                       test_hashtable_insert_stress,
-                       test_hashtable_stress_post);
-    unit_test_register(hashtable_tests,
                        "getting",
                        test_hashtable_standard_pre,
                        test_hashtable_get,
@@ -191,6 +186,11 @@ int main(void)
                        test_hashtable_standard_pre,
                        test_hashtable_remove,
                        test_hashtable_standard_post);
+    unit_test_register(hashtable_tests,
+                       "stress",
+                       test_hashtable_stress_pre,
+                       test_hashtable_stress,
+                       test_hashtable_stress_post);
     unit_test_register(hashtable_tests,
                        "threading",
                        test_hashtable_standard_pre,
@@ -691,42 +691,6 @@ static bool test_hashtable_duplicate_insertion(void * p_context, char ** err_str
     return true;
 }
 
-static bool test_hashtable_insert_stress(void * p_context, char ** err_str)
-{
-    hashtable_stress_context_t context = (hashtable_stress_context_t) p_context;
-    uint32_t i;
-    bool success;
-
-    // Insert everything
-    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
-        success = hashtable_insert(context->int_table, (void *)(uintptr_t) context->keys[i], context->elems[i]);
-        if (!success) {
-            *err_str = "int insertion failed";
-            return false;
-        }
-    }
-
-    #ifdef VERBOSE
-    printf("final table:\n");
-    hashtable_print(context->int_table);
-    printf("\n");
-    #endif
-
-    // Check that it's all there
-    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
-        hashtable_elem_t elem = hashtable_get(context->int_table, (void *)(uintptr_t) context->keys[i]);
-        if (!elem || strcmp((char *) elem, context->elems[i]) != 0) {
-            printf("failed at %d\n", i);
-            *err_str = "int retrieval failed";
-            return false;
-        }
-    }
-
-    // Success
-    *err_str = "";
-    return true;
-}
-
 static bool test_hashtable_get(void * p_context, char ** err_str)
 {
     hashtable_test_context_t context = (hashtable_test_context_t) p_context;
@@ -873,6 +837,68 @@ static bool test_hashtable_remove(void * p_context, char ** err_str)
     }
 
     // All tests passed!
+    return true;
+}
+
+static bool test_hashtable_stress(void * p_context, char ** err_str)
+{
+    hashtable_stress_context_t context = (hashtable_stress_context_t) p_context;
+    uint32_t i;
+    bool success;
+
+    // Insert everything
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        success = hashtable_insert(context->int_table, (void *)(uintptr_t) context->keys[i], context->elems[i]);
+        if (!success) {
+            *err_str = "int insertion failed";
+            return false;
+        }
+    }
+
+    #ifdef VERBOSE
+    printf("all in:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
+
+    // Check that it's all there
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        hashtable_elem_t elem = hashtable_get(context->int_table, (void *)(uintptr_t) context->keys[i]);
+        if (!elem || strcmp((char *) elem, context->elems[i]) != 0) {
+            printf("failed at %d\n", i);
+            *err_str = "int retrieval failed";
+            return false;
+        }
+    }
+
+    // Remove everything
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        hashtable_elem_t elem = hashtable_remove(context->int_table, (void *)(uintptr_t) context->keys[i]);
+        if (!elem || strcmp((char *) elem, context->elems[i]) != 0) {
+            printf("failed at %d\n", i);
+            *err_str = "int retrieval failed";
+            return false;
+        }
+    }
+
+    #ifdef VERBOSE
+    printf("all out:\n");
+    hashtable_print(context->int_table);
+    printf("\n");
+    #endif
+
+    // Check that nothing's there
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        hashtable_elem_t elem = hashtable_get(context->int_table, (void *)(uintptr_t) context->keys[i]);
+        if (elem) {
+            printf("failed at %d\n", i);
+            *err_str = "int retrieval failed";
+            return false;
+        }
+    }
+
+    // Success
+    *err_str = "";
     return true;
 }
 
