@@ -326,6 +326,22 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
     }
 }
 
+void hashtable_print(hashtable_t h)
+{
+    hashtable_node_t curr;
+
+    for (curr = h->head; curr; curr = curr->next) {
+        if (curr->sentinel) {
+            printf("[ ...0x%08x (0x%08x) ]\n", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
+        }
+        else {
+            printf("[    0x%08x (0x%08x) ]: ", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
+            h->print_f(curr->elem);
+            printf("\n");
+        }
+    }
+}
+
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
 
 static hashtable_node_t hashtable_node_create(hashtable_elem_t elem, uint32_t hash)
@@ -372,22 +388,6 @@ static inline uint32_t hashtable_uint32_bit_reverse(uint32_t val)
 
     // Return reversed value
     return reversed;
-}
-
-void hashtable_print(hashtable_t h)
-{
-    hashtable_node_t curr;
-
-    for (curr = h->head; curr; curr = curr->next) {
-        if (curr->sentinel) {
-            printf("[ ...0x%08x (0x%08x) ]\n", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
-        }
-        else {
-            printf("[    0x%08x (0x%08x) ]: ", curr->hash, hashtable_uint32_bit_reverse(curr->hash));
-            h->print_f(curr->elem);
-            printf("\n");
-        }
-    }
 }
 
 /** @} addtogroup HASHTABLE */
