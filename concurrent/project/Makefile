@@ -1,7 +1,7 @@
 .DELETE_ON_ERROR:
 
 CC := gcc
-CFLAGS := -Wextra -Wall -g -std=c99
+CFLAGS := -Wextra -Wall -g -std=c11
 
 ROOT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SRC_DIR := $(ROOT_DIR)/src
