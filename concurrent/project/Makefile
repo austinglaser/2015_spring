@@ -46,7 +46,7 @@ clean:
 .PHONY: test
 test: hashtable_test hashtable_node_test
 	@echo "Testing"
-	@valgrind -q --leak-check=full --error-exitcode=128 ./hashtable_test
 	@valgrind -q --leak-check=full --error-exitcode=128 ./hashtable_node_test
+	@valgrind -q --leak-check=full --error-exitcode=128 ./hashtable_test
 	@echo "Done Testing"
 

@@ -49,19 +49,28 @@ typedef struct unit_test_node_t_ {
  * @brief   Unit test structure
  */
 struct unit_test_t_ {
+    char *                      test_name;  /**< The name of this test suite */
     uint32_t                    n_tests;    /**< How many tests are registered */
     unit_test_node_t            head;       /**< The linked list of tests */
 };
 
+/* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
+
+/**
+ * @brief   Inserts name into padded_name, 
+ */
+static inline void unit_test_pad_string(char * string, char * padded_string, char pad, uint32_t n_left_pad, uint32_t n_pad_chars);
+
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
 
-unit_test_t unit_test_create(void)
+unit_test_t unit_test_create(char * test_name)
 {
     // Allocate memory
     unit_test_t tests = (unit_test_t) malloc(sizeof(struct unit_test_t_));
     if (!tests) return NULL;
 
     // Initialize fields
+    tests->test_name = test_name;
     tests->n_tests = 0;
     tests->head = NULL;
 
@@ -91,30 +100,37 @@ uint32_t unit_test_run(unit_test_t tests)
 {
     char * err_str;
     void * p_context;
-    char padded_name[64];
+    char padded_name[128];
     bool passed;
     uint32_t i;
     uint32_t n_failed = 0;
     unit_test_node_t curr;
     
-    // Loop over all registered tests
+    // Print title and box
+    // Box top
     printf("\n");
+    printf(" ");
+    for (i = 0; i < N_PAD_CHARS + 9; i++) printf("=");
+    printf("\n");
+
+    // Name
+    unit_test_pad_string(tests->test_name, padded_name, '=', N_LEFT_PAD, N_PAD_CHARS + 9);
+    printf(" %s\n", padded_name);
+
+    // Box bottom
+    printf(" ");
+    for (i = 0; i < N_PAD_CHARS + 9; i++) printf("=");
+    printf("\n");
+
+    // Loop over all registered tests
     for (curr = tests->head; curr; curr = curr->next) {
         // Run test. Will only run body if pre-test tasks succeed
         passed = curr->pre(&p_context, &err_str) &&
                  curr->body(p_context, &err_str);
         curr->post(p_context);
 
-        // Fill with padding character
-        memset(padded_name, '-', N_PAD_CHARS);
-        padded_name[N_PAD_CHARS] = '\0';
-
-        // Put name in padded string
-        padded_name[N_LEFT_PAD] = ' ';
-        for (i = 0; i < strlen(curr->name); i++) {
-            padded_name[N_LEFT_PAD + 1 + i] = curr->name[i];
-        }
-        padded_name[N_LEFT_PAD + 1 + i] = ' ';
+        // Pad name
+        unit_test_pad_string(curr->name, padded_name, '-', N_LEFT_PAD, N_PAD_CHARS);
 
         // Print results
         if (passed) {
@@ -170,4 +186,23 @@ bool unit_test_register(unit_test_t tests, char * name, unit_test_pre_f_t pre, u
     return true;
 }
 
+/* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
+
+static inline void unit_test_pad_string(char * string, char * padded_string, char pad, uint32_t n_left_pad, uint32_t n_pad_chars)
+{
+    uint32_t i;
+
+    // Fill with padding character
+    memset(padded_string, pad, n_pad_chars);
+    padded_string[n_pad_chars] = '\0';
+
+    // Put name in padded string
+    padded_string[n_left_pad] = ' ';
+    for (i = 0; i < strlen(string); i++) {
+        padded_string[n_left_pad + 1 + i] = string[i];
+    }
+    padded_string[n_left_pad + 1 + i] = ' ';
+}
+
 /** @} addtogroup UNIT_TEST */
+

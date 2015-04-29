@@ -101,7 +101,7 @@ int main(void)
     unit_test_t hashtable_tests;
 
     // Allocate test structure
-    hashtable_tests = unit_test_create();
+    hashtable_tests = unit_test_create("hashtable node");
 
     // Register tests
     unit_test_register(hashtable_tests,

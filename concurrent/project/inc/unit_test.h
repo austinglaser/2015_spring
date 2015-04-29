@@ -61,9 +61,11 @@ typedef void (*unit_test_post_f_t)(void *);
 /**
  * @brief   Allocates a new test structure
  *
+ * @param[in] test_name:    The overall name of this unit test
+ *
  * @return  A pointer to the new structure, or NULL if memory allocation failed
  */
-unit_test_t unit_test_create(void);
+unit_test_t unit_test_create(char * test_name);
 
 /**
  * @brief   De-allocates a test structure
