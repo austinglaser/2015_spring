@@ -183,12 +183,13 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
     if (!h) return false;
 
     // If some other thread isn't already resizing, we'll do it
-    bool resizing_already = atomic_flag_test_and_set(&(h->resizing));
-    if (!resizing_already) {
+    bool already_resizing = atomic_flag_test_and_set(&(h->resizing));
+    if (!already_resizing) {
         if ((atomic_load(&(h->n_elements)) + 1) > ((1U << h->hash_width)*2)) {
             // Resize
-            hashtable_node_t* temp = (hashtable_node_t*) malloc(((1 << h->hash_width)*2)*sizeof(hashtable_node_t*));
+            hashtable_node_t* temp = (hashtable_node_t*) realloc(h->hash_list, ((1 << h->hash_width)*2)*sizeof(hashtable_node_t*));
             if (!temp) return false;
+            h->hash_list = temp;
 
             // Create references to the new list locations
             uint_fast32_t i;
@@ -201,7 +202,7 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
                         // Just set our reference
                         h->hash_list[i] = curr;
 
-                        // Done with this cycle of work
+                        // Done with this sentinel
                         break;
                     }
                     else {
@@ -215,7 +216,7 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
                             // Set the reference
                             h->hash_list[i] = node;
 
-                            // Got this one inserted
+                            // Done with this sentinel
                             break;
                         }
                         else {
