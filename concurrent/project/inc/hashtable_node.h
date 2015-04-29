@@ -84,7 +84,7 @@ hashtable_node_t hashtable_node_get_next(hashtable_node_t node);
 /**
  * @brief   Determines whether node is a sentinel or not
  *
- * @param[in] node:             The node to extradct information from
+ * @param[in] node:             The node to extract information from
  *
  * @return      true if the node is a sentinel, false otherwise
  */

@@ -14,6 +14,7 @@
 
 // Modules
 #include "hashtable.h"
+#include "hashtable_node.h"
 
 // Standard
 #include <stdint.h>
@@ -25,7 +26,7 @@
 /**
  * @brief   Value used to denote a sentinel node
  */
-#define HASHTABLE_NODE_SENTINEL_ELEM    ((uintptr_t) UINT64_C(0xFFFFFFFFFFFFFFFF))
+#define HASHTABLE_NODE_SENTINEL_ELEM    (UINTPTR_MAX)
 
 /* --- PRIVATE DATA TYPES --------------------------------------------------- */
 
@@ -36,7 +37,7 @@ struct hashtable_node_t_ {
     uint32_t            hash;           /**< The node's hash */
     atomic_uintptr_t    elem;           /**< The element the node references */
     atomic_uintptr_t    next;           /**< The next element in the sequence */
-}
+};
 
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
 
@@ -48,8 +49,11 @@ hashtable_node_t hashtable_node_create(hashtable_elem_t elem, uint32_t hash)
 
     // Initialize fields
     node->hash = hash;
-    atomic_init(&(node->elem), NULL);
+    atomic_init(&(node->elem), (uintptr_t) elem);
     atomic_init(&(node->next), NULL);
+
+    // Success
+    return node;
 }
 
 void hashtable_node_free(hashtable_node_t node)
@@ -95,36 +99,36 @@ void hashtable_node_set_elem(hashtable_node_t node, hashtable_elem_t elem)
 void hashtable_node_set_next(hashtable_node_t node, hashtable_node_t next)
 {
     // Atomically set the next field
-    if (node) atomic_store($(node->next), (uintptr_t) next);
+    if (node) atomic_store(&(node->next), (uintptr_t) next);
 }
 
 void hashtable_node_set_sentinel(hashtable_node_t node)
 {
     // Atomically set the elem field to be a sentinel
-    if (node) atomic_store($(node->elem), HASHTABLE_NODE_SENTINEL_ELEM);
+    if (node) atomic_store(&(node->elem), HASHTABLE_NODE_SENTINEL_ELEM);
 }
 
 bool hashtable_node_set_sentinel_if_elem(hashtable_node_t node, hashtable_elem_t expected_elem)
 {
-    return hashtable_node_cas_elem(node, expected_elem, HASHTABLE_NODE_SENTINEL_ELEM);
+    return hashtable_node_cas_elem(node, expected_elem, (hashtable_elem_t) HASHTABLE_NODE_SENTINEL_ELEM);
 }
 
 bool hashtable_node_if_sentinel_set_elem(hashtable_node_t node, hashtable_elem_t new_elem)
 {
-    return hashtable_node_cas_elem(node, HASHTABLE_NODE_SENTINEL_ELEM, new_elem);
+    return hashtable_node_cas_elem(node, (hashtable_elem_t) HASHTABLE_NODE_SENTINEL_ELEM, new_elem);
 }
 
 bool hashtable_node_cas_elem(hashtable_node_t node, hashtable_elem_t expected_elem, hashtable_elem_t new_elem)
 {
     // CAS the elem field, checking whether it's a sentinel or not
-    if (node)   return atomic_compare_exchange_strong(&(node->elem), &expected_elem, (uintptr_t) new_elem);
+    if (node)   return atomic_compare_exchange_strong(&(node->elem), (uintptr_t *) &expected_elem, (uintptr_t) new_elem);
     else        return false;
 }
 
 bool hashtable_node_cas_next(hashtable_node_t node, hashtable_node_t expected_next, hashtable_node_t new_next)
 {
     // CAS the next field, checking whether it's still expected_next
-    if (node)   return atomic_compare_exchange_strong(&(node->next), (uintptr_t) &expected_next, (uintptr_t) new_next);
+    if (node)   return atomic_compare_exchange_strong(&(node->next), (uintptr_t *) &expected_next, (uintptr_t) new_next);
     else        return false;
 }
 

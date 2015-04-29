@@ -8,9 +8,17 @@ SRC_DIR := $(ROOT_DIR)/src
 INC_DIR := $(ROOT_DIR)/inc
 BUILD_DIR := $(ROOT_DIR)/build
 
-all: hashtable_test
+OBJS := $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable.o $(BUILD_DIR)/hashtable_node.o
 
-hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable_test.o $(BUILD_DIR)/hashtable.o | $(BUILD_DIR)
+all: hashtable_test hashtable_node_test
+
+hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable.o $(BUILD_DIR)/hashtable_node.o $(BUILD_DIR)/hashtable_test.o | $(BUILD_DIR)
+	@echo "Linking $@"
+	@$(CC) $(CFLAGS) $^ -o $@
+	@echo ""
+	@echo "Done Compiling"
+
+hashtable_node_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable_node.o $(BUILD_DIR)/hashtable_node_test.o | $(BUILD_DIR)
 	@echo "Linking $@"
 	@$(CC) $(CFLAGS) $^ -o $@
 	@echo ""
@@ -36,8 +44,9 @@ clean:
 	@echo "Done Cleaning"
 
 .PHONY: test
-test: hashtable_test
+test: hashtable_test hashtable_node_test
 	@echo "Testing"
-	@valgrind -q --leak-check=full --error-exitcode=128 ./$<
+	@valgrind -q --leak-check=full --error-exitcode=128 ./hashtable_test
+	@valgrind -q --leak-check=full --error-exitcode=128 ./hashtable_node_test
 	@echo "Done Testing"
 
