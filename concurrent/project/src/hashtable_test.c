@@ -26,7 +26,7 @@
 
 #define ARRAY_ELEMENTS(a)   (sizeof(a)/sizeof((a)[0]))
 
-#define N_STRESS_INSERTIONS (3200)          // Not a power of two
+#define N_STRESS_INSERTIONS (5200)          // Not a power of two
 
 //#define VERBOSE
 
