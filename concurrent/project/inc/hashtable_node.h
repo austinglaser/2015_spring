@@ -110,15 +110,23 @@ void hashtable_node_set_elem(hashtable_node_t node, hashtable_elem_t elem);
 void hashtable_node_set_next(hashtable_node_t node, hashtable_node_t next);
 
 /**
- * @brief   Makes node into a sentinel if it wasn't already
+ * @brief   Makes node into a sentinel
  *
  * @note    node's elem will read as NULL after a call to this function
  *
  * @param[in, out] node:        The node to modify
- *
- * @return      true if node was made into a sentinel, false if it already was one
  */
-bool hashtable_node_set_sentinel(hashtable_node_t node);
+void hashtable_node_set_sentinel(hashtable_node_t node);
+
+/**
+ * @brief   Sets the node as a sentinel if node->elem == expected_elem
+ *
+ * @param[in,out] node:         The node to modify
+ * @param[in] expected_elem:    The expected element
+ *
+ * @return      true if node was made into a sentinel, false otherwise
+ */
+bool hashtable_node_set_sentinel_if_elem(hashtable_node_t node, hashtable_elem_t expected_elem);
 
 /**
  * @brief   Atomically checks whether node is a sentinel, and if so sets the elem to new_elem
@@ -129,6 +137,17 @@ bool hashtable_node_set_sentinel(hashtable_node_t node);
  * @return      true if node was a sentinel and new_elem was successfully set, false otherwise
  */
 bool hashtable_node_if_sentinel_set_elem(hashtable_node_t node, hashtable_elem_t new_elem);
+
+/**
+ * @brief   Atomicall checks whether the node's elem has the expected value, and if so sets the new element
+ *
+ * @param[in,out] node:         The node to modifyy
+ * @param[in] expected_elem:    The expected value of the node's element
+ * @param[in] new_elem:         The value we're attempting to set
+ *
+ * @return      true if the CAS succeeded, false otherwise
+ */
+bool hashtable_node_cas_elem(hashtable_node_t node, hashtable_elem_t expected_elem, hashtable_elem_t new_elem);
 
 /**
  * @brief   Atomically compares node's next value to expected next, sets it to new_hash if they are equal
