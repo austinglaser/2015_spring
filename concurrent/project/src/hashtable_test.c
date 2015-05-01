@@ -29,7 +29,7 @@
 
 #define N_STRESS_INSERTIONS (5200)          // Not a power of two
 
-#define N_THREADS           (2)             
+#define N_THREADS           (200)             
 
 //#define VERBOSE
 
