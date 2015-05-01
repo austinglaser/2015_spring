@@ -39,7 +39,7 @@ $(BUILD_DIR):
 clean:
 	@echo "Cleaning"
 	@echo ""
-	rm -rf hashtable_test $(BUILD_DIR)
+	rm -rf hashtable_node_test hashtable_test $(BUILD_DIR)
 	@echo ""
 	@echo "Done Cleaning"
 
