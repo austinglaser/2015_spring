@@ -63,18 +63,24 @@ typedef void (*free_f_t)(hashtable_elem_t);
  * (algorithmically) unlimited size, but may be resized at
  * runtime for performance purposes. 
  *
- * @param[in] hash_f:   A function which will return a hash for a table value.
- *                      If a table which can store multiple types of objects is desired,
- *                      the function must be able to hash any and all of them appropriately
+ * @param[in] hash_f:   A function which will return a hash for a key value.
+ * @param[in] print_F   A function which can print a single elem value, or NULL
+ * @param[in] free_f    A function which can free a single elem value, or NULL if no freeing is needed
+ *
+ * @note        The table's ability to hash, store, and retrieve different types
+ *              of objects is determined by how flexible these three functions
+ *              are.
  *
  * @return              A new hashtable object, or NULL if memory allocation fails
  */
-hashtable_t hashtable_create(hash_f_t hash_f, print_f_t print_f, free_f_t free_f);
+hashtable_t hashtable_create(hash_f_t hash_f,
+                             print_f_t print_f,
+                             free_f_t free_f);
 
 /**
  * @brief   Deletes the hashtable, de-allocating all memory used
  *
- * @param[in] h:        The hashtable to be freed
+ * @param[in] h         The hashtable to be freed
  */
 void hashtable_free(hashtable_t h);
 
@@ -84,7 +90,7 @@ void hashtable_free(hashtable_t h);
  * @param[in] h:        The hashtable to search
  * @param[in] key:      A piece of data, hashable with the hash function provide for <h>
  * 
- * @return              True if <h>[<key>] contains an value, false otherwise
+ * @return              True if h[key] contains an value, false otherwise
  */
 bool hashtable_contains(hashtable_t h,
                         hashtable_key_t key);
@@ -94,32 +100,32 @@ bool hashtable_contains(hashtable_t h,
  *
  * @param[in,out] h:    The hashtable to modify
  * @param[in] key:      The value to use as a key
- * @param[in] val:      The data to store at <h>[<key>]
+ * @param[in] val:      The data to store at h[key]
  *
- * @return              True if the data was successfuly inserted. False if there is already an element at <h>[<key>]
+ * @return              True if the data was successfuly inserted. False if there is already an element at h[key]
  */
 bool hashtable_insert(hashtable_t h,
                       hashtable_key_t key,
                       hashtable_elem_t val);
 
 /**
- * @brief   Gets the value at <h>[<key>], leaving that object in the table
+ * @brief   Gets the value at h[key], leaving that object in the table
  *
  * @param[in] h:        The hashtable to search
- * @param[in] key:      A piece of data, hashable with the hash function provide for <h>
+ * @param[in] key:      A piece of data, hashable with the hash function provide for h
  * 
- * @return              The object residing at <h>[<key>], or NULL if none exists
+ * @return              The object residing at h[key], or NULL if none exists
  */
 hashtable_elem_t hashtable_get(hashtable_t h,
                                hashtable_key_t key);
 
 /**
- * @brief   Removes the value at <h>[<key>], and returns it
+ * @brief   Removes the value at h[key], and returns it
  *
  * @param[in] h:        The hashtable to search
- * @param[in] key:      A piece of data, hashable with the hash function provide for <h>
+ * @param[in] key:      A piece of data, hashable with the hash function provide for h
  * 
- * @return              The object residing at <h>[<key>], or NULL if none exists
+ * @return              The object residing at h[key], or NULL if none exists
  */
 hashtable_elem_t hashtable_remove(hashtable_t h,
                                   hashtable_key_t key);
