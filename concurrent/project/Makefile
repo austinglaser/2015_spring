@@ -1,7 +1,7 @@
 .DELETE_ON_ERROR:
 
 CC := gcc
-CFLAGS := -Wextra -Wall -g -std=c11
+CFLAGS := -Wextra -Wall -g -std=c11 -pthread
 
 ROOT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
 SRC_DIR := $(ROOT_DIR)/src
@@ -14,7 +14,7 @@ all: hashtable_test hashtable_node_test
 
 hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable.o $(BUILD_DIR)/hashtable_node.o $(BUILD_DIR)/hashtable_test.o | $(BUILD_DIR)
 	@echo "Linking $@"
-	@$(CC) $(CFLAGS) $^ -o $@
+	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
 	@echo ""
 	@echo "Done Compiling"
 

@@ -18,6 +18,7 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <pthread.h>
 
 // Modules
 #include "unit_test.h"
@@ -27,6 +28,8 @@
 #define ARRAY_ELEMENTS(a)   (sizeof(a)/sizeof((a)[0]))
 
 #define N_STRESS_INSERTIONS (5200)          // Not a power of two
+
+#define N_THREADS           (2)             
 
 //#define VERBOSE
 
@@ -130,10 +133,18 @@ static bool test_hashtable_remove(void * p_context, char ** err_str);
 
 /**
  * @brief   Test with threading
- *
- * @note    Unimplemented; will always fail. Probably will be several tests eventually
  */
 static bool test_hashtable_threading(void * p_context, char ** err_str);
+
+/**
+ * @brief   Function which tries to insert many values into the hashtable
+ */
+static void * test_hashtable_insert_thread_f(void * p_context);
+
+/**
+ * @brief   Function which tries to remove many values from the hashtable
+ */
+static void * test_hashtable_remove_thread_f(void * p_context);
 
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
 
@@ -193,9 +204,9 @@ int main(void)
                        test_hashtable_stress_post);
     unit_test_register(hashtable_tests,
                        "threading",
-                       test_hashtable_standard_pre,
+                       test_hashtable_stress_pre,
                        test_hashtable_threading,
-                       test_hashtable_standard_post);
+                       test_hashtable_stress_post);
 
     // Run tests
     if (unit_test_run(hashtable_tests)) err = 1;
@@ -898,14 +909,113 @@ static bool test_hashtable_stress(void * p_context, char ** err_str)
     }
 
     // Success
-    *err_str = "";
+    *err_str = NULL;
     return true;
 }
 
 static bool test_hashtable_threading(void * p_context, char ** err_str)
 {
-    (void) p_context;
+    hashtable_stress_context_t context = (hashtable_stress_context_t) p_context;
+    uint32_t i;
 
-    *err_str = "!!! unimplemented !!!";
+    // Start the insertion threads
+    pthread_t insert_threads[N_THREADS];
+    for (i = 0; i < N_THREADS; i++) {
+        pthread_create(&(insert_threads[i]), NULL, test_hashtable_insert_thread_f, p_context);
+    }
+
+    // Wait on and check the insertion threads
+    bool insert_success = true;
+    for (i = 0; i < N_THREADS; i++) {
+        void * err_val;
+        pthread_join(insert_threads[i], &err_val);
+        if (err_val) {
+            *err_str = "insertion failed";
+            insert_success = false;
+        }
+    }
+    if (!insert_success) return false;
+
+    // Check that it's all there
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        hashtable_elem_t elem = hashtable_get(context->int_table, (void *)(uintptr_t) context->keys[i]);
+        if (!elem || strcmp((char *) elem, context->elems[i]) != 0) {
+            printf("failed at %d\n", i);
+            *err_str = "int retrieval failed";
+            return false;
+        }
+    }
+
+    // Start the remove threads
+    pthread_t remove_threads[N_THREADS];
+    for (i = 0; i < N_THREADS; i++) {
+        pthread_create(&(remove_threads[i]), NULL, test_hashtable_remove_thread_f, p_context);
+    }
+    
+    // Wait on and check the remove threads
+    bool remove_success = true;
+    for (i = 0; i < N_THREADS; i++) {
+        void * err_val;
+        pthread_join(remove_threads[i], &err_val);
+        if (err_val) {
+            *err_str = "removal failed";
+            remove_success = false;
+        }
+    }
+    if (!remove_success) return false;
+
+    // Check that nothing's there
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        hashtable_elem_t elem = hashtable_get(context->int_table, (void *)(uintptr_t) context->keys[i]);
+        if (elem) {
+            printf("failed at %d\n", i);
+            *err_str = "int retrieval failed";
+            return false;
+        }
+    }
+
+    // Success
+    *err_str = NULL;
     return true;
+}
+
+static void * test_hashtable_insert_thread_f(void * p_context)
+{
+    hashtable_stress_context_t context = (hashtable_stress_context_t) p_context;
+    uint32_t i;
+    bool success;
+
+    // Insert everything. Intentionally races with copies of itself
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        success = hashtable_insert(context->int_table, (void *)(uintptr_t) context->keys[i], context->elems[i]);
+
+        // Make sure that either we put it there, or some other thread did
+        if (!success && !hashtable_contains(context->int_table, (void*)(uintptr_t) context->keys[i])) {
+            // Failure
+            return (void *) 1;
+        }
+    }
+
+    // Success
+    return (void *) 0;
+}
+
+static void * test_hashtable_remove_thread_f(void * p_context)
+{
+    hashtable_stress_context_t context = (hashtable_stress_context_t) p_context;
+    uint32_t i;
+
+    // Remove everything. Intentionally races with copies of itself
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        hashtable_elem_t elem = hashtable_remove(context->int_table, (void *)(uintptr_t) context->keys[i]);
+        // Check that we did remove it, and that we got the right one back
+        if (hashtable_contains(context->int_table, (void*)(uintptr_t) context->keys[i]) ||
+            (elem && strcmp((char *) elem, context->elems[i]) != 0)) {
+            // Failure
+            return (void *) 1;
+        }
+    }
+
+    // Success
+    return (void *) 0;
 }
