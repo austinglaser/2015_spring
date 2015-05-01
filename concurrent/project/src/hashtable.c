@@ -34,14 +34,20 @@
  * @brief   The basic data structure for a hash table
  */
 struct hashtable_t_ {
-    atomic_uint_fast32_t        n_elements;     /**< The total number of elements stored in the table */
-    uint32_t                    hash_width;     /**< The number of bits in the hash actually used for binning */
-    uint32_t                    hash_mask;      /**< The mask used to determine the significant bits in a hash value */
-    hashtable_node_t *          hash_list;      /**< An array of hash bins, of length 2^<hash_width> */
-    atomic_flag                 resizing;       /**< A thread must acquire this flag to resize */
-    hash_f_t                    hash_f;         /**< The function used to hash keys */
-    print_f_t                   print_f;        /**< The function used to print elements */
-    free_f_t                    free_f;         /**< The function used to free elements */
+    atomic_uint_fast32_t        n_elements;         /**< The total number of elements stored in the table */
+    uint32_t                    hash_width;         /**< The number of bits in the hash actually used for binning */
+    uint32_t                    hash_mask;          /**< The mask used to determine the significant bits in a hash value */
+    hashtable_node_t *          hash_list;          /**< An array of hash bins, of length 2^<hash_width> */
+    atomic_flag                 resizing;           /**< A thread must acquire this flag to resize */
+    hash_f_t                    hash_f;             /**< The function used to hash keys */
+    print_f_t                   print_f;            /**< The function used to print elements */
+    free_f_t                    free_f;             /**< The function used to free elements */
+    hashtable_node_t *          saved_nodes;        /**< An array of nodes for later deallocation */
+    void *                      saved_pointers;     /**< An array of pointers for later deallocation */
+    atomic_uint_fast32_t        saved_nodes_n;      /**< How many nodes are stored in the saved_nodes array */
+    atomic_uint_fast32_t        saved_pointers_n;   /**< How many nodes are stored in the saved_pointers array */
+    atomic_uint_fast32_t        saved_nodes_size;   /**< The total number of slots in the saved_nodes array */
+    atomic_uint_fast32_t        saved_pointers_size;/**< The total number of slots in the saved_pointers array */
 };
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
@@ -147,20 +153,42 @@ void hashtable_free(hashtable_t h)
     hashtable_node_t curr;
     hashtable_node_t next;
 
-    // Free element list
-    curr = h->hash_list[0];
-    while (curr) {
-        next = hashtable_node_get_next(curr);
-        if (h->free_f) h->free_f(hashtable_node_get_elem(curr));
-        hashtable_node_free(curr);
-        curr = next;
+    if (h) {
+        // Free element list
+        curr = h->hash_list[0];
+        while (curr) {
+            next = hashtable_node_get_next(curr);
+            if (h->free_f) h->free_f(hashtable_node_get_elem(curr));
+            hashtable_node_free(curr);
+            curr = next;
+        }
+
+        // Free hash list
+        if (h->hash_list) free(h->hash_list);
+
+        // Free saved pointer arrays
+        if (h->saved_pointers) {
+            uint32_t i;
+            for (i = 0; i < saved_pointers_n; i++) {
+                if (h->saved_pointers[i]) free(h->saved_pointers[i]);
+            }
+
+            free(h->saved_pointers);
+        }
+
+        // Free saved pointer arrays
+        if (h->saved_nodes) {
+            uint32_t i;
+            for (i = 0; i < saved_nodes_n; i++) {
+                if (h->saved_nodes[i]) hashtable_node_free(h->saved_nodes[i]);
+            }
+
+            free(h->saved_nodes);
+        }
+
+        // Free table
+        free(h);
     }
-
-    // Free hash list
-    free(h->hash_list);
-
-    // Free table
-    free(h);
 }
 
 bool hashtable_contains(hashtable_t h, hashtable_key_t key)
