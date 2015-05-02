@@ -240,7 +240,6 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
     hashtable_node_t prev;
     hashtable_node_t curr;
     hashtable_node_t node;
-    uint32_t hash;
 
     // Check input
     if (!h) return false;
@@ -294,10 +293,13 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
     }
     atomic_flag_clear(&(h->table_resizing));
 
-    while (true) {
-        // Get the key's hash
-        hash = h->hash_f(key);
+    // Get the key's hash
+    uint32_t hash;
+    hash = h->hash_f(key);
 
+    // Loop until success
+    bool insert_success = false;
+    do {
         // Find the appropriate place in the table
         hashtable_find_hash(h, hash, &curr, &prev);
 
@@ -305,16 +307,9 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
         if (curr && hashtable_node_get_hash(curr) == hash) {
             // See if it's a sentinel
             if (!hashtable_node_is_sentinel(curr)) return false;
-            else {
-                // If it's still a sentinel, set the element
-                if (hashtable_node_if_sentinel_set_elem(curr, elem)) {
-                    // Increase element count
-                    atomic_fetch_add(&(h->n_elements), 1);
 
-                    // Success
-                    return true;;
-                }
-            }
+            // If it's still a sentinel, set the element
+            insert_success = hashtable_node_if_sentinel_set_elem(curr, elem);
         }
         else {
             // Create a new node
@@ -322,23 +317,18 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
 
             // Insert it
             hashtable_node_set_next(node, curr);
-            if (hashtable_node_cas_next(prev, curr, node)) {
-                // Increase element count
-                atomic_fetch_add(&(h->n_elements), 1);
+            insert_success = hashtable_node_cas_next(prev, curr, node);
 
-
-                // Success
-                return true;
-            }
-            else {
-                // Clean up after ourselves
-                free(elem);
-            }
+            // Clean up after ourselves
+            if (!insert_success) free(elem);
         }
+    } while (!insert_success);
 
-        // Success
-        return true;
-    }
+    // Increase element count
+    atomic_fetch_add(&(h->n_elements), 1);
+
+    // Success
+    return true;
 }
 
 hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
