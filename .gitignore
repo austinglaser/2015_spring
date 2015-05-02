@@ -16,3 +16,4 @@ doxygen/
 *.dSYM
 hashtable_test
 hashtable_node_test
+reference_list_test

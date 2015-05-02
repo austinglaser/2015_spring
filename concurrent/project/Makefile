@@ -8,21 +8,19 @@ SRC_DIR := $(ROOT_DIR)/src
 INC_DIR := $(ROOT_DIR)/inc
 BUILD_DIR := $(ROOT_DIR)/build
 
-OBJS := $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable.o $(BUILD_DIR)/hashtable_node.o
-
-all: hashtable_test hashtable_node_test
+all: hashtable_test hashtable_node_test reference_list_test
 
 hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable.o $(BUILD_DIR)/hashtable_node.o $(BUILD_DIR)/hashtable_test.o | $(BUILD_DIR)
 	@echo "Linking $@"
 	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
-	@echo ""
-	@echo "Done Compiling"
 
 hashtable_node_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable_node.o $(BUILD_DIR)/hashtable_node_test.o | $(BUILD_DIR)
 	@echo "Linking $@"
 	@$(CC) $(CFLAGS) $^ -o $@
-	@echo ""
-	@echo "Done Compiling"
+
+reference_list_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/reference_list.o $(BUILD_DIR)/reference_list_test.o | $(BUILD_DIR)
+	@echo "Linking $@"
+	@$(CC) $(CFLAGS) $^ -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo "Compiling $(notdir $<)"
@@ -44,9 +42,10 @@ clean:
 	@echo "Done Cleaning"
 
 .PHONY: test
-test: hashtable_test hashtable_node_test
+test: hashtable_test hashtable_node_test reference_list_test
 	@echo "Testing"
 	@valgrind -q --leak-check=full --error-exitcode=128 ./hashtable_node_test
+	@valgrind -q --leak-check=full --error-exitcode=128 ./reference_list_test
 	@valgrind -q --leak-check=full --error-exitcode=128 ./hashtable_test
 	@echo "Done Testing"
 
