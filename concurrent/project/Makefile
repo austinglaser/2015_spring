@@ -10,19 +10,35 @@ BUILD_DIR := $(ROOT_DIR)/build
 
 all: $(BUILD_DIR)/hashtable_test $(BUILD_DIR)/hashtable_node_test $(BUILD_DIR)/reference_list_test $(BUILD_DIR)/reference_list_node_test
 
-$(BUILD_DIR)/hashtable_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable.o $(BUILD_DIR)/hashtable_node.o $(BUILD_DIR)/hashtable_test.o | $(BUILD_DIR)
+$(BUILD_DIR)/hashtable_test: $(BUILD_DIR)/unit_test.o \
+		             $(BUILD_DIR)/hashtable.o \
+			     $(BUILD_DIR)/hashtable_node.o \
+			     $(BUILD_DIR)/hashtable_test.o \
+			     $(BUILD_DIR)/reference_list.o \
+			     $(BUILD_DIR)/reference_list_node.o \
+			     | $(BUILD_DIR)
 	@echo "Linking $@"
 	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
 
-$(BUILD_DIR)/hashtable_node_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtable_node.o $(BUILD_DIR)/hashtable_node_test.o | $(BUILD_DIR)
+$(BUILD_DIR)/hashtable_node_test: $(BUILD_DIR)/unit_test.o \
+				  $(BUILD_DIR)/hashtable_node.o \
+				  $(BUILD_DIR)/hashtable_node_test.o \
+				  | $(BUILD_DIR)
 	@echo "Linking $@"
 	@$(CC) $(CFLAGS) $^ -o $@
 
-$(BUILD_DIR)/reference_list_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/reference_list.o $(BUILD_DIR)/reference_list_node.o $(BUILD_DIR)/reference_list_test.o | $(BUILD_DIR)
+$(BUILD_DIR)/reference_list_test: $(BUILD_DIR)/unit_test.o \
+				  $(BUILD_DIR)/reference_list.o \
+				  $(BUILD_DIR)/reference_list_node.o \
+				  $(BUILD_DIR)/reference_list_test.o \
+				  | $(BUILD_DIR)
 	@echo "Linking $@"
 	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
 
-$(BUILD_DIR)/reference_list_node_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/reference_list_node.o $(BUILD_DIR)/reference_list_node_test.o | $(BUILD_DIR)
+$(BUILD_DIR)/reference_list_node_test: $(BUILD_DIR)/unit_test.o \
+				       $(BUILD_DIR)/reference_list_node.o \
+				       $(BUILD_DIR)/reference_list_node_test.o \
+				       | $(BUILD_DIR)
 	@echo "Linking $@"
 	@$(CC) $(CFLAGS) $^ -o $@
 

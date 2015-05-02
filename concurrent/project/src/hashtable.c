@@ -14,7 +14,6 @@
 
 // Module
 #include "hashtable.h"
-#include "hashtable_node.h"
 
 // Standard Libraries
 #include <stdlib.h>
@@ -24,6 +23,10 @@
 #include <stdatomic.h>
 #include <assert.h>
 #include <string.h>
+
+// Other modules
+#include "hashtable_node.h"
+#include "reference_list.h"
  
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
@@ -44,14 +47,8 @@ struct hashtable_t_ {
     hash_f_t                    hash_f;                     /**< The function used to hash keys */
     print_f_t                   print_f;                    /**< The function used to print elements */
     free_f_t                    free_f;                     /**< The function used to free elements */
-    hashtable_node_t *          saved_nodes;                /**< An array of nodes for later deallocation */
-    void **                     saved_pointers;             /**< An array of pointers for later deallocation */
-    atomic_uint_fast32_t        saved_nodes_n;              /**< How many nodes are stored in the saved_nodes array */
-    atomic_uint_fast32_t        saved_pointers_n;           /**< How many nodes are stored in the saved_pointers array */
-    uint32_t                    saved_nodes_size;           /**< The total number of slots in the saved_nodes array */
-    uint32_t                    saved_pointers_size;        /**< The total number of slots in the saved_pointers array */
-    atomic_flag                 saved_nodes_resizing;       /**< A thread must acquire this flag to resize the saved_nodes array */
-    atomic_flag                 saved_pointers_resizing;    /**< A thread must acquire this flag to resize the saved_pointers array */
+    reference_list_t            saved_nodes;                /**< A list of saved hashtable nodes */
+    reference_list_t            saved_pointers;             /**< A list of pointers which can be deallocated with free() alone */
 };
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
@@ -103,6 +100,13 @@ static inline void hashtable_save_pointer(hashtable_t h, void * ptr);
 static inline bool hashtable_resize_array(hashtable_t h, void ** array_ptr, uint32_t old_size, uint32_t new_size, uint32_t elem_size);
 
 /**
+ * @brief   Wrapper for hashtable_node_free
+ *
+ * @see hashtable_node_free
+ */
+static void hashtable_node_reference_list_free(void* elem);
+
+/**
  * @brief   Bit reverses <val>
  *
  * @note    from <https://graphics.stanford.edu/~seander/bithacks.html#BitReverseTable>
@@ -141,15 +145,12 @@ hashtable_t hashtable_create(hash_f_t hash_f, print_f_t print_f, free_f_t free_f
     memset(h->hash_list, 0, (1 << HASH_WIDTH_INIT) * sizeof(hashtable_node_t));
     
     // Create reference saving arrays
-    h->saved_nodes_size = SAVE_SLOTS_INIT;
-    h->saved_pointers_size = SAVE_SLOTS_INIT;
-    atomic_init(&(h->saved_nodes_n), 0);
-    atomic_init(&(h->saved_pointers_n), 0);
-    atomic_flag_clear(&(h->saved_nodes_resizing));
-    atomic_flag_clear(&(h->saved_pointers_resizing));
-    h->saved_nodes = (hashtable_node_t *) malloc(SAVE_SLOTS_INIT * sizeof(hashtable_node_t *));
-    h->saved_pointers = (void *) malloc(SAVE_SLOTS_INIT * sizeof(void *));
+    h->saved_nodes      = reference_list_create(hashtable_node_reference_list_free);
+    h->saved_pointers   = reference_list_create(free);
     if (!h->saved_nodes || !h->saved_pointers) {
+        if (h->saved_nodes)    reference_list_free(h->saved_nodes);
+        if (h->saved_pointers) reference_list_free(h->saved_pointers);
+
         // Clean up struct
         hashtable_free(h);
 
@@ -216,25 +217,9 @@ void hashtable_free(hashtable_t h)
         // Free hash list
         if (h->hash_list) free(h->hash_list);
 
-        // Free saved pointer array and contents
-        if (h->saved_pointers) {
-            uint32_t i;
-            for (i = 0; i < h->saved_pointers_n; i++) {
-                if (h->saved_pointers[i]) free(h->saved_pointers[i]);
-            }
-
-            free(h->saved_pointers);
-        }
-
-        // Free saved node array and contents
-        if (h->saved_nodes) {
-            uint32_t i;
-            for (i = 0; i < h->saved_nodes_n; i++) {
-                if (h->saved_nodes[i]) hashtable_node_free(h->saved_nodes[i]);
-            }
-
-            free(h->saved_nodes);
-        }
+        // Free all saved references
+        if (h->saved_nodes)    reference_list_free(h->saved_nodes);
+        if (h->saved_pointers) reference_list_free(h->saved_pointers);
 
         // Free table
         free(h);
@@ -464,48 +449,14 @@ static inline void hashtable_find_hash(hashtable_t h, uint32_t hash, hashtable_n
 
 static inline void hashtable_save_node(hashtable_t h, hashtable_node_t node)
 {
-    // Acquire resize flag
-    bool already_resizing = atomic_flag_test_and_set(&(h->saved_nodes_resizing));
-    if (!already_resizing) {
-        // Have resize flag, check if we need to resize
-        if (h->saved_nodes_n >= h->saved_nodes_size/2) {
-            // Make more space
-            if (hashtable_resize_array(h, (void **) &(h->saved_nodes), h->saved_nodes_size, h->saved_nodes_size*2, sizeof(hashtable_node_t *))) {
-                // Record changed size
-                h->saved_nodes_size *= 2;
-            }
-        }
-    }
-    atomic_flag_clear(&(h->saved_nodes_resizing));
-
-    // Get and increment the spot in the array
-    uint32_t save_index = atomic_fetch_add(&(h->saved_nodes_n), 1);
-
-    // Store the reference
-    h->saved_nodes[save_index] = node;
+    // Shove it in the list
+    reference_list_insert(h->saved_nodes, node);
 }
 
 static inline void hashtable_save_pointer(hashtable_t h, void * pointer)
 {
-    // Acquire resize flag
-    bool already_resizing = atomic_flag_test_and_set(&(h->saved_pointers_resizing));
-    if (!already_resizing) {
-        // Have resize flag, check if we need to resize
-        if (h->saved_pointers_n >= h->saved_pointers_size/2) {
-            // Make more space
-            if (hashtable_resize_array(h, (void **) &(h->saved_pointers), h->saved_pointers_size, h->saved_pointers_size*2, sizeof(void *))) {
-                // Record changed size
-                h->saved_pointers_size *= 2;
-            }
-        }
-    }
-    atomic_flag_clear(&(h->saved_pointers_resizing));
-
-    // Get and increment the spot in the array
-    uint32_t save_index = atomic_fetch_add(&(h->saved_pointers_n), 1);
-
-    // Store the reference
-    h->saved_pointers[save_index] = pointer;
+    // Shove it in the list
+    reference_list_insert(h->saved_pointers, pointer);
 }
 
 static inline bool hashtable_resize_array(hashtable_t h, void ** array, uint32_t old_size, uint32_t new_size, uint32_t elem_size)
@@ -529,6 +480,11 @@ static inline bool hashtable_resize_array(hashtable_t h, void ** array, uint32_t
 
     // Success
     return true;
+}
+
+static void hashtable_node_reference_list_free(void* elem)
+{
+    hashtable_node_free((hashtable_node_t) elem);
 }
 
 static inline uint32_t hashtable_uint32_bit_reverse(uint32_t val)
