@@ -18,6 +18,7 @@
 #include <string.h>
 #include <assert.h>
 #include <time.h>
+#include <pthread.h>
 
 // Modules
 #include "unit_test.h"
@@ -25,6 +26,7 @@
 /* --- PRIVATE MACROS ------------------------------------------------------- */
 
 #define N_STRESS_INSERTIONS     (4096)
+#define N_THREADS               (2)
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
 
@@ -60,6 +62,11 @@ static bool test_reference_list_stress(void* p_context, char** err_str);
  * @brief   Ensures the structure is thread-safe
  */
 static bool test_reference_list_threading(void* p_context, char** err_str);
+
+/**
+ * @brief   Inserts a bunch of values into the reference list
+ */
+static void* test_reference_list_insert_thread_f(void* p_context);
 
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
 
@@ -187,8 +194,47 @@ static bool test_reference_list_stress(void* p_context, char** err_str)
 
 static bool test_reference_list_threading(void* p_context, char** err_str)
 {
-    (void) p_context;
+    uint32_t i;
 
-    *err_str = "!!! unimplemented !!!";
+    // Start the insertion threads
+    pthread_t insert_threads[N_THREADS];
+    for (i = 0; i < N_THREADS; i++) {
+        pthread_create(&(insert_threads[i]), NULL, test_reference_list_insert_thread_f, p_context);
+    }
+
+    // Wait on and check the insertion threads
+    bool insert_success = true;
+    for (i = 0; i < N_THREADS; i++) {
+        void * err_val;
+        pthread_join(insert_threads[i], &err_val);
+        if (err_val) insert_success = false;
+    }
+    if (!insert_success) {
+        *err_str = "insertion failed";
+        return false;
+    }
+
+    // Success
+    *err_str = NULL;
     return true;
+}
+
+static void* test_reference_list_insert_thread_f(void* p_context)
+{
+    reference_list_t r = (reference_list_t) p_context;
+
+    // Insert a lot of things
+    uint32_t i;
+    for (i = 0; i < N_STRESS_INSERTIONS; i++) {
+        uint32_t* reference = (uint32_t*) malloc(sizeof(uint32_t));
+        uint32_t err_code = reference_list_insert(r, reference);
+        if (err_code) {
+            free(reference);
+            return (void*) 1;
+        }
+    }
+
+    // Successful insertion. Success criteria is also a clean
+    // run with valgrind or another memory error-detection utility
+    return (void*) 0;
 }

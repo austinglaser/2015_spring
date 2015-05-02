@@ -20,7 +20,7 @@ $(BUILD_DIR)/hashtable_node_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/hashtabl
 
 $(BUILD_DIR)/reference_list_test: $(BUILD_DIR)/unit_test.o $(BUILD_DIR)/reference_list.o $(BUILD_DIR)/reference_list_test.o | $(BUILD_DIR)
 	@echo "Linking $@"
-	@$(CC) $(CFLAGS) $^ -o $@
+	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo "Compiling $(notdir $<)"
