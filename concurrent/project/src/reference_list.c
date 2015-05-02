@@ -17,6 +17,8 @@
 // Standard
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdboo.h>
+#include <stdatomic.h>
 
 /* --- PRIVATE DATA TYPES --------------------------------------------------- */
 
@@ -24,6 +26,8 @@
  * @brief   The reference list structure
  */
 struct reference_list_t_ {
+    reference_list_node_t   head;       /**< The beginning of the actual list */
+    free_f_t                free_f;     /**< A function to free individual elements */
 };
 
 /* --- PUBLIC FUNCTION DEFINITIONS ------------------------------------------ */
