@@ -11,7 +11,7 @@
  /**
  * @addtogroup HASHTABLE
  * @{
- * @addtogroup HASHTABLE_NODE
+ * @defgroup HASHTABLE_NODE
  * @{
  */
 
@@ -161,7 +161,7 @@ bool hashtable_node_cas_elem(hashtable_node_t node, hashtable_elem_t expected_el
 bool hashtable_node_cas_next(hashtable_node_t node, hashtable_node_t expected_next, hashtable_node_t new_next);
 
 /**
- * @} addtogroup HASHTABLE_NODE
+ * @} defgroup HASHTABLE_NODE
  * @} addtogroup HASHTABLE
  */
 #endif  //#ifndef HASHTABLE_NODE_H_
