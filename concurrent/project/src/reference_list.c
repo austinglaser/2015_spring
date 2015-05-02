@@ -39,6 +39,9 @@ reference_list_t reference_list_create(free_f_t free_f)
 {
     reference_list_t r;
 
+    // Require free_f to be non-NULL
+    if (!free_f) return NULL;
+
     // Allocate memory
     r = (reference_list_t) malloc(sizeof(struct reference_list_t_));
     if (!r) return NULL;
