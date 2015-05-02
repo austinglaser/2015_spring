@@ -17,8 +17,11 @@
 // Standard
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdboo.h>
+#include <stdbool.h>
 #include <stdatomic.h>
+
+// Modules
+#include "reference_list_node.h"
 
 /* --- PRIVATE DATA TYPES --------------------------------------------------- */
 

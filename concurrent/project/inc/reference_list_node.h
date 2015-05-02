@@ -1,8 +1,8 @@
 /**
  * @file    reference_list.h
- * @author  Ausitin Glaser <austin.glaser@colorado.edu>
+ * @author  Austin Glaser <austin.glaser@colorado.edu>
  *
- * @brief   Implementation of a node type for reference lists
+ * @brief   Intefrace for a node type for reference lists
  */
 
 #ifndef REFERENCE_LIST_NODE_H_
@@ -36,6 +36,15 @@ typedef struct reference_list_node_t_* reference_list_node_t;
  * @return      A reference to the new node, or NULL if memory allocation failed
  */
 reference_list_node_t reference_list_node_create(void* ref);
+
+/**
+ * @brief       Retrieves the stored reference from a node
+ *
+ * @param[in] node:     The node to retrieve information from
+ *
+ * @return      The reference value, or NULL if retrieval failed
+ */
+void* reference_list_node_get_ref(reference_list_node_t node);
 
 /**
  * @brief       Gets the next node referenced
