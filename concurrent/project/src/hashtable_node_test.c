@@ -93,69 +93,69 @@ static bool test_hashtable_node_cas_sentinel_2(void * p_context, char ** err_str
 /**
  * @brief   Test entry point
  *
- * @return  -1 if one or more tests failed, 0 otherwise
+ * @return  1 if one or more tests failed, 0 otherwise
  */
 int main(void)
 {
     uint32_t err;
-    unit_test_t hashtable_tests;
+    unit_test_t hashtable_node_tests;
 
     // Allocate test structure
-    hashtable_tests = unit_test_create("hashtable node");
+    hashtable_node_tests = unit_test_create("hashtable node");
 
     // Register tests
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "creation",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_create,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "hash retrieval",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_get_hash,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "elem storing",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_get_set_elem,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "next storing",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_get_set_next,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "sentinel",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_get_set_sentinel,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "elem cas",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_cas_elem,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "next cas",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_cas_next,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "sentinel cas 1",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_cas_sentinel_1,
                        test_hashtable_node_standard_post);
-    unit_test_register(hashtable_tests,
+    unit_test_register(hashtable_node_tests,
                        "sentinel cas 2",
                        test_hashtable_node_standard_pre,
                        test_hashtable_node_cas_sentinel_2,
                        test_hashtable_node_standard_post);
 
     // Run tests
-    if (unit_test_run(hashtable_tests)) err = 1;
+    if (unit_test_run(hashtable_node_tests)) err = 1;
     else                                err = 0;
 
     // Free test structure
-    unit_test_free(hashtable_tests);
+    unit_test_free(hashtable_node_tests);
 
     return err;
 }
