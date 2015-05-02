@@ -63,6 +63,9 @@ typedef void (*free_f_t)(hashtable_elem_t);
  * (algorithmically) unlimited size, but may be resized at
  * runtime for performance purposes. 
  *
+ * @warming     This function is not thread safe. It must only be called once
+ *              per object instance
+ *
  * @param[in] hash_f:   A function which will return a hash for a key value.
  * @param[in] print_F   A function which can print a single elem value, or NULL
  * @param[in] free_f    A function which can free a single elem value, or NULL if no freeing is needed
@@ -79,6 +82,9 @@ hashtable_t hashtable_create(hash_f_t hash_f,
 
 /**
  * @brief   Deletes the hashtable, de-allocating all memory used
+ *
+ * @warming     This function is not thread safe. It must only be called once
+ *              per object instance
  *
  * @param[in] h         The hashtable to be freed
  */
