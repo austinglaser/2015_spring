@@ -48,9 +48,9 @@ clean:
 .PHONY: test
 test: $(BUILD_DIR)/hashtable_test $(BUILD_DIR)/hashtable_node_test $(BUILD_DIR)/reference_list_test $(BUILD_DIR)/reference_list_node_test
 	@echo "Testing"
-	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/hashtable_node_test
 	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/reference_list_node_test
 	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/reference_list_test
+	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/hashtable_node_test
 	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/hashtable_test
 	@echo "Done Testing"
 
