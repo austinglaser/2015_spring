@@ -65,7 +65,7 @@ struct hashtable_t_ {
  * @param[out] curr:        Will point to a node with the given hash, or the one after its spot
  * @param[out] prev:        Points to the node before curr
  */
-static inline void hashtable_find_hash(hashtable_t h, uint32_t hash, hashtable_node_t * curr, hashtable_node_t * prev);
+static inline void hashtable_find_location(hashtable_t h, uint32_t hash, hashtable_node_t * curr, hashtable_node_t * prev);
 
 /**
  * @brief   Saves a node for later deallocation
@@ -254,7 +254,7 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
                 uint_fast32_t i;
                 for (i = (1U << h->hash_width); i < (1U << h->hash_width)*2; i++) {
                     while (true) {
-                        hashtable_find_hash(h, i, &curr, &prev);
+                        hashtable_find_location(h, i, &curr, &prev);
 
                         // Check if we should create a new node
                         if (curr && i == hashtable_node_get_hash(curr)) {
@@ -301,7 +301,7 @@ bool hashtable_insert(hashtable_t h, hashtable_key_t key, hashtable_elem_t elem)
     bool insert_success = false;
     do {
         // Find the appropriate place in the table
-        hashtable_find_hash(h, hash, &curr, &prev);
+        hashtable_find_location(h, hash, &curr, &prev);
 
         // Check if hash is already present
         if (curr && hashtable_node_get_hash(curr) == hash) {
@@ -341,7 +341,7 @@ hashtable_elem_t hashtable_get(hashtable_t h, hashtable_key_t key)
     hash = h->hash_f(key);
 
     // Search table
-    hashtable_find_hash(h, hash, &curr, &prev);
+    hashtable_find_location(h, hash, &curr, &prev);
 
     // Check if hash is already present
     if (curr && hashtable_node_get_hash(curr) == hash && !hashtable_node_is_sentinel(curr)) {
@@ -366,7 +366,7 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
     bool remove_success = false;
     do {
         // Search table
-        hashtable_find_hash(h, hash, &curr, &prev);
+        hashtable_find_location(h, hash, &curr, &prev);
 
         // Check if it's actually in the table
         uint32_t node_hash = hashtable_node_get_hash(curr);
@@ -386,7 +386,7 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
                 // Try to remove from the list
                 remove_success = hashtable_node_cas_next(prev, curr, hashtable_node_get_next(curr));
 
-                // Save the node
+                // Save the node for later deallocation
                 if (remove_success) hashtable_save_node(h, curr);
             }
         }
@@ -422,7 +422,7 @@ void hashtable_print(hashtable_t h)
 
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
 
-static inline void hashtable_find_hash(hashtable_t h, uint32_t hash, hashtable_node_t * curr, hashtable_node_t * prev)
+static inline void hashtable_find_location(hashtable_t h, uint32_t hash, hashtable_node_t * curr, hashtable_node_t * prev)
 {
     // Get reversed hash
     uint32_t reversed = hashtable_uint32_bit_reverse(hash);
