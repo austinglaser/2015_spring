@@ -16,8 +16,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <assert.h>
-#include <time.h>
 
 // Modules
 #include "hashtable.h"
@@ -181,22 +179,16 @@ static bool test_hashtable_node_standard_pre(void ** p_context, char ** err_str)
         *err_str = "test allocation failed";
         return false;
     }
+    *p_context = context;
 
     // allocate nodes
     context->zero = hashtable_node_create(NULL, 0);
     context->five = hashtable_node_create(NULL, 5);
     context->max = hashtable_node_create(NULL, UINT32_MAX);
     if (!context->zero || !context->five || !context->max) {
-        hashtable_node_free(context->zero);
-        hashtable_node_free(context->five);
-        hashtable_node_free(context->max);
-        free(context);
-        *err_str = "test allocation failed";
+        *err_str = "memory allocation failed";
         return false;
     }
-
-    // Pass context on
-    *p_context = (void *) context;
 
     *err_str = NULL;
     return true;

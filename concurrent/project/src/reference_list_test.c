@@ -125,8 +125,6 @@ static bool test_reference_list_standard_pre(void** p_context, char** err_str)
         *err_str = "memory allocation failed";
         return false;
     }
-
-    // Save allocated list
     *p_context = r;
 
     // Success

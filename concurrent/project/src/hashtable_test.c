@@ -265,19 +265,13 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
         *err_str = "test allocation failed";
         return false;
     }
+    *p_context = context;
 
     // Allocate tables
     context->int_table = hashtable_create(hash_int, print_elem, NULL);
-    if (!context->int_table) {
-        *err_str = "memory allocation failed";
-        free(context);
-        return false;
-    }
     context->string_table = hashtable_create(hash_string, print_elem, NULL);
-    if (!context->int_table) {
+    if (!context->int_table || !context->string_table) {
         *err_str = "memory allocation failed";
-        hashtable_free(context->int_table);
-        free(context);
         return false;
     }
 
@@ -291,8 +285,6 @@ static bool test_hashtable_standard_pre(void ** p_context, char ** err_str)
     printf("\n");
     #endif
 
-    // Pass context on
-    *p_context = context;
 
     // Successful allocation
     *err_str = NULL;
