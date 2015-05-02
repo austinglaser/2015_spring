@@ -361,7 +361,10 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
     // Generate hash
     hash = h->hash_f(key);
 
-    while (true) {
+    // Loop until successful removal
+    hashtable_elem_t elem;
+    bool remove_success = false;
+    do {
         // Search table
         hashtable_find_hash(h, hash, &curr, &prev);
 
@@ -371,36 +374,33 @@ hashtable_elem_t hashtable_remove(hashtable_t h, hashtable_key_t key)
             // Determine if it should be left in as a sentinel
             if (node_hash == (node_hash & h->hash_mask)) {
                 // Save the element
-                hashtable_elem_t elem = hashtable_node_get_elem(curr);
+                elem = hashtable_node_get_elem(curr);
 
                 // Try to set as sentinel
-                if (hashtable_node_set_sentinel_if_elem(curr, elem)) { 
-                    // Decrement the number of elements
-                    atomic_fetch_sub(&(h->n_elements), 1);
-
-                    return elem;
-                }
+                remove_success = hashtable_node_set_sentinel_if_elem(curr, elem);
             }
             else {
                 // Save the element
-                hashtable_elem_t elem = hashtable_node_get_elem(curr);
+                elem = hashtable_node_get_elem(curr);
 
                 // Try to remove from the list
-                if (hashtable_node_cas_next(prev, curr, hashtable_node_get_next(curr))) {
-                    // Decrement the number of elements
-                    atomic_fetch_sub(&(h->n_elements), 1);
+                remove_success = hashtable_node_cas_next(prev, curr, hashtable_node_get_next(curr));
 
-                    // Save the node
-                    hashtable_save_node(h, curr);
-
-                    return elem;
-                }
+                // Save the node
+                if (remove_success) hashtable_save_node(h, curr);
             }
         }
         else {
+            // Not present
             return NULL;
         }
-    }
+    } while (!remove_success);
+
+    // Decrement the number of elements
+    atomic_fetch_sub(&(h->n_elements), 1);
+
+    // Pass back the element
+    return elem;
 }
 
 void hashtable_print(hashtable_t h)
