@@ -51,6 +51,11 @@ reference_list_node_t reference_list_node_create(void* ref)
     return node;
 }
 
+void reference_list_node_free(reference_list_node_t node) {
+    // Free the memory
+    if (node) free(node);
+}
+
 void* reference_list_node_get_ref(reference_list_node_t node)
 {
     // Check input

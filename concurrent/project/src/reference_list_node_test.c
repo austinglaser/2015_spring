@@ -66,7 +66,7 @@ int main(void)
     unit_test_t reference_list_node_tests;
 
     // Allocate test structure
-    reference_list_node_tests = unit_test_create("reference_list node");
+    reference_list_node_tests = unit_test_create("reference list node");
 
     // Register tests
     unit_test_register(reference_list_node_tests,

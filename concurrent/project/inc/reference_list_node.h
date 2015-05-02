@@ -38,6 +38,15 @@ typedef struct reference_list_node_t_* reference_list_node_t;
 reference_list_node_t reference_list_node_create(void* ref);
 
 /**
+ * @brief       Frees memory associated with a reference list node
+ *
+ * @note        Doesn't free memory pointed to by the ref field
+ *
+ * @param[in] node: The node to be freed
+ */
+void reference_list_node_free(reference_list_node_t node);
+
+/**
  * @brief       Retrieves the stored reference from a node
  *
  * @param[in] node:     The node to retrieve information from
