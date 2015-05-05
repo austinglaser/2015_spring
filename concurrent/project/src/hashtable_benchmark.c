@@ -25,20 +25,19 @@
 
 #define ARRAY_ELEMENTS(a)   (sizeof(a)/sizeof((a)[0]))
 
-#define N_KEYS              (10000)
+#define N_KEYS              (1000)
+
+#define MAX_N_THREADS       (16)
 
 /* --- PRIVATE VARIABLES ---------------------------------------------------- */
 
-/**
- * @brief   The different numbers of threads to test with
- */
-static const uint32_t n_threads[] = {1, 2, 4, 8, 16, 32, 64};
+static pthread_t threads[MAX_N_THREADS];
 
 static volatile bool start_operation = false;
 
 static uint32_t keys[N_KEYS];
 
-static volatile atomic_uint_fast32_t key_index;
+static atomic_uint_fast32_t key_index;
 
 /* --- PRIVATE FUNCTION PROTOTYPES ------------------------------------------ */
 
@@ -89,15 +88,8 @@ int main(void)
     }
 
     // Loop over all different thread counts
-    for (i = 0; i < ARRAY_ELEMENTS(n_threads); i++) {
-        // Allocate thread array
-        pthread_t* threads = (pthread_t*) malloc(sizeof(pthread_t)*n_threads[i]);
-        if (!threads) {
-            free(keys);
-            printf("memory allocation failed\n");
-            return 1;
-        }
-
+    printf("threads,seconds;\n");
+    for (i = 1; i <= MAX_N_THREADS; i++) {
         // Create data structure
         hashtable_t h = hashtable_create(hash_int, print_elem, NULL);
 
@@ -105,7 +97,7 @@ int main(void)
         start_operation = false;
         atomic_init(&key_index, 0);
         uint32_t thread_n;
-        for (thread_n = 0; thread_n < n_threads[i]; i++) pthread_create(&(threads[thread_n]), NULL, test_thread_f, h);
+        for (thread_n = 0; thread_n < i; thread_n++) pthread_create(&(threads[thread_n]), NULL, test_thread_f, h);
 
         // Start threads and timer
         struct timeval start;
@@ -113,22 +105,18 @@ int main(void)
         start_operation = true;
 
         // Wait on threads
-        for (thread_n = 0; thread_n < n_threads[i]; i++) pthread_join(threads[thread_n], NULL);
+        for (thread_n = 0; thread_n < i; thread_n++) pthread_join(threads[thread_n], NULL);
 
         // Stop timer
         struct timeval stop;
         gettimeofday(&stop, NULL);
 
         // Report results
-        printf("%d threads\t%0.6lf seconds\n", n_threads[i], timedifference_sec(stop, start));
+        printf("%d,%0.6lf;\n", i, timedifference_sec(start, stop));
 
         // Free
         hashtable_free(h);
-        free(threads);
     }
-
-    // Free key array
-    free(keys);
 }
 
 /* --- PRIVATE FUNCTION DEFINITIONS ----------------------------------------- */
@@ -144,6 +132,11 @@ static void print_elem(hashtable_elem_t e)
     (void) e;
 }
 
+double timedifference_sec(struct timeval t0, struct timeval t1)
+{
+    return (t1.tv_sec - t0.tv_sec) + ((t1.tv_usec - t0.tv_usec) / 1000000.0f);
+}
+
 static void* test_thread_f(void* arg)
 {
     // Argument is really a hashtable type
@@ -153,18 +146,13 @@ static void* test_thread_f(void* arg)
     while (!start_operation);
 
     // Insert everything
-    uint_fast32_t current_index = atomic_fetch_add(&key_index, 1);
+    volatile uint_fast32_t current_index = atomic_fetch_add(&key_index, 1);
     while (current_index < N_KEYS) {
-        bool success = hashtable_insert(h, (void*)(uintptr_t) keys[current_index], NULL);
-        if (!success) printf("insertion failure\n");
+        hashtable_insert(h, (void*)(uintptr_t) keys[current_index], NULL);
+        current_index = atomic_fetch_add(&key_index, 1);
     }
 
     // All done
     return NULL;
-}
-
-double timedifference_sec(struct timeval t0, struct timeval t1)
-{
-    return (t1.tv_sec - t0.tv_sec) + ((t1.tv_usec - t0.tv_usec) / 1000000.0f);
 }
 

@@ -8,7 +8,11 @@ SRC_DIR := $(ROOT_DIR)/src
 INC_DIR := $(ROOT_DIR)/inc
 BUILD_DIR := $(ROOT_DIR)/build
 
-all: $(BUILD_DIR)/hashtable_test $(BUILD_DIR)/hashtable_node_test $(BUILD_DIR)/reference_list_test $(BUILD_DIR)/reference_list_node_test
+all:		$(BUILD_DIR)/hashtable_test \
+		$(BUILD_DIR)/hashtable_node_test \
+		$(BUILD_DIR)/reference_list_test \
+		$(BUILD_DIR)/reference_list_node_test \
+		$(BUILD_DIR)/hashtable_benchmark
 
 $(BUILD_DIR)/hashtable_test:		$(BUILD_DIR)/unit_test.o \
 					$(BUILD_DIR)/hashtable.o \
@@ -83,7 +87,7 @@ test: $(BUILD_DIR)/hashtable_test $(BUILD_DIR)/hashtable_node_test $(BUILD_DIR)/
 benchmark: $(BUILD_DIR)/hashtable_benchmark
 	@echo "Benchmarking"
 	@echo ""
-	@$<
+	@valgrind -q --leak-check=full --error-exitcode=128 $<
 	@echo ""
-	@echo "Done Testing"
+	@echo "Done Benchmarking"
 
