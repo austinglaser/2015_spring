@@ -10,37 +10,46 @@ BUILD_DIR := $(ROOT_DIR)/build
 
 all: $(BUILD_DIR)/hashtable_test $(BUILD_DIR)/hashtable_node_test $(BUILD_DIR)/reference_list_test $(BUILD_DIR)/reference_list_node_test
 
-$(BUILD_DIR)/hashtable_test: $(BUILD_DIR)/unit_test.o \
-		             $(BUILD_DIR)/hashtable.o \
-			     $(BUILD_DIR)/hashtable_node.o \
-			     $(BUILD_DIR)/hashtable_test.o \
-			     $(BUILD_DIR)/reference_list.o \
-			     $(BUILD_DIR)/reference_list_node.o \
-			     | $(BUILD_DIR)
+$(BUILD_DIR)/hashtable_test:		$(BUILD_DIR)/unit_test.o \
+					$(BUILD_DIR)/hashtable.o \
+					$(BUILD_DIR)/hashtable_node.o \
+					$(BUILD_DIR)/hashtable_test.o \
+					$(BUILD_DIR)/reference_list.o \
+					$(BUILD_DIR)/reference_list_node.o \
+					| $(BUILD_DIR)
 	@echo "Linking $(notdir $@)"
 	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
 
-$(BUILD_DIR)/hashtable_node_test: $(BUILD_DIR)/unit_test.o \
-				  $(BUILD_DIR)/hashtable_node.o \
-				  $(BUILD_DIR)/hashtable_node_test.o \
-				  | $(BUILD_DIR)
+$(BUILD_DIR)/hashtable_node_test:	$(BUILD_DIR)/unit_test.o \
+					$(BUILD_DIR)/hashtable_node.o \
+					$(BUILD_DIR)/hashtable_node_test.o \
+					| $(BUILD_DIR)
 	@echo "Linking $(notdir $@)"
 	@$(CC) $(CFLAGS) $^ -o $@
 
-$(BUILD_DIR)/reference_list_test: $(BUILD_DIR)/unit_test.o \
-				  $(BUILD_DIR)/reference_list.o \
-				  $(BUILD_DIR)/reference_list_node.o \
-				  $(BUILD_DIR)/reference_list_test.o \
-				  | $(BUILD_DIR)
+$(BUILD_DIR)/reference_list_test:	$(BUILD_DIR)/unit_test.o \
+					$(BUILD_DIR)/reference_list.o \
+					$(BUILD_DIR)/reference_list_node.o \
+					$(BUILD_DIR)/reference_list_test.o \
+					| $(BUILD_DIR)
 	@echo "Linking $(notdir $@)"
 	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
 
-$(BUILD_DIR)/reference_list_node_test: $(BUILD_DIR)/unit_test.o \
-				       $(BUILD_DIR)/reference_list_node.o \
-				       $(BUILD_DIR)/reference_list_node_test.o \
-				       | $(BUILD_DIR)
+$(BUILD_DIR)/reference_list_node_test:	$(BUILD_DIR)/unit_test.o \
+					$(BUILD_DIR)/reference_list_node.o \
+					$(BUILD_DIR)/reference_list_node_test.o \
+					| $(BUILD_DIR)
 	@echo "Linking $(notdir $@)"
 	@$(CC) $(CFLAGS) $^ -o $@
+
+$(BUILD_DIR)/hashtable_benchmark:	$(BUILD_DIR)/hashtable_benchmark.o \
+					$(BUILD_DIR)/hashtable.o \
+					$(BUILD_DIR)/hashtable_node.o \
+					$(BUILD_DIR)/reference_list.o \
+					$(BUILD_DIR)/reference_list_node.o \
+					| $(BUILD_DIR)
+	@echo "Linking $(notdir $@)"
+	@$(CC) $(CFLAGS) $^ -o $@ -lpthread
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo "Compiling $(notdir $<)"
@@ -68,5 +77,13 @@ test: $(BUILD_DIR)/hashtable_test $(BUILD_DIR)/hashtable_node_test $(BUILD_DIR)/
 	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/reference_list_test
 	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/hashtable_node_test
 	@valgrind -q --leak-check=full --error-exitcode=128 $(BUILD_DIR)/hashtable_test
+	@echo "Done Testing"
+
+.PHONY: benchmark
+benchmark: $(BUILD_DIR)/hashtable_benchmark
+	@echo "Benchmarking"
+	@echo ""
+	@$<
+	@echo ""
 	@echo "Done Testing"
 
